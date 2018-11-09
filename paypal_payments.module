@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains paypal_payments.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function paypal_payments_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the paypal_payments module.
+    case 'help.page.paypal_payments':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides a way to collect money via paypal on nodes/product entities') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function paypal_payments_theme() {
+  return [
+    'paypal_payments' => [
+      'render element' => 'children',
+    ],
+  ];
+}

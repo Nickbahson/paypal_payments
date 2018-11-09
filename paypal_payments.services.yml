@@ -1,0 +1,4 @@
+services:
+  paypal.lazy_builders:
+    class: Drupal\paypal_payments\Services\PaypalPaymentsLazyBuilders
+    arguments: ['@entity.manager','@entity.form_builder','@current_user','@module_handler','@renderer']

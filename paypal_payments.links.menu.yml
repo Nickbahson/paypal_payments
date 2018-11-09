@@ -1,0 +1,14 @@
+
+# Paypal menu items definition
+entity.paypal.collection:
+  title: 'Paypal list'
+  route_name: entity.paypal.collection
+  description: 'List Paypal entities'
+  parent: system.admin_structure
+  weight: 100
+
+paypal.admin.structure.settings:
+  title: 'Paypal settings'
+  description: 'Configure Paypal entities'
+  route_name: paypal.settings
+  parent: system.admin_structure

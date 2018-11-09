@@ -1,0 +1,67 @@
+access paypal_payments form:
+  title: 'View Paypal Payment Form'
+  description: 'View and pay using paypal payment form'
+access own paypal_payments report:
+  title: 'Access List of own payment receipts'
+  description: 'View the report listing of own Paypal receipts.'
+administer paypal_payments:
+  title: 'Administer Paypal Settings'
+  description: 'Access the Paypal payments admin Settings Page'
+  restrict access: true
+add paypal entities:
+  title: 'Create new Paypal entities'
+
+administer paypal entities:
+  title: 'Administer Paypal entities'
+  description: 'Allow to access the administration form to configure Paypal entities.'
+  restrict access: true
+
+delete paypal entities:
+  title: 'Delete Paypal entities'
+
+edit paypal entities:
+  title: 'Edit Paypal entities'
+
+view published paypal entities:
+  title: 'View published Paypal entities'
+
+view unpublished paypal entities:
+  title: 'View unpublished Paypal entities'
+add paypal entities:
+  title: 'Create new Paypal entities'
+
+administer paypal entities:
+  title: 'Administer Paypal entities'
+  description: 'Allow to access the administration form to configure Paypal entities.'
+  restrict access: true
+
+delete paypal entities:
+  title: 'Delete Paypal entities'
+
+edit paypal entities:
+  title: 'Edit Paypal entities'
+
+view published paypal entities:
+  title: 'View published Paypal entities'
+
+view unpublished paypal entities:
+  title: 'View unpublished Paypal entities'
+add paypal entities:
+  title: 'Create new Paypal entities'
+
+administer paypal entities:
+  title: 'Administer Paypal entities'
+  description: 'Allow to access the administration form to configure Paypal entities.'
+  restrict access: true
+
+delete paypal entities:
+  title: 'Delete Paypal entities'
+
+edit paypal entities:
+  title: 'Edit Paypal entities'
+
+view published paypal entities:
+  title: 'View published Paypal entities'
+
+view unpublished paypal entities:
+  title: 'View unpublished Paypal entities'

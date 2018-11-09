@@ -1,0 +1,18 @@
+
+paypal_payments.paypal_payments_form:
+  path: '/form/paypal_payments_form'
+  defaults:
+    _form: '\Drupal\paypal_payments\Form\PayPalPaymentsForm'
+    _title: 'PayPalPaymentsForm'
+  requirements:
+    _access: 'TRUE'
+  
+
+paypal_payments.paypal_payments_settings_form:
+  path: '/paypal_payments/settings'
+  defaults:
+    _form: '\Drupal\paypal_payments\Form\PayPalPaymentsSettingsForm'
+    _title: 'PayPalPaymentsSettingsForm'
+  requirements:
+    _access: 'TRUE'
+  
