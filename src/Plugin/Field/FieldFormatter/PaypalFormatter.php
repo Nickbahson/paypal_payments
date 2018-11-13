@@ -166,10 +166,18 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
       ];
     }
 
+    foreach ($items as $delta => $item) {
+      $price = $item->getValue();
+      $elements[$delta] = [
+        'price' => [
+          '#markup' => $this->t('Price | ' .$price['value']),
+        ],
+      ];
+    }
+
     $elements[] = $output + [
       'paypal_form' => [],
       ];
-
 
     return $elements;
   }

@@ -220,6 +220,7 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
       ->setLabel(t('Price'))
       ->setDescription(t('The Price in Store currency of the Product'))
       ->setRequired(TRUE)
+      ->setDefaultValue(0)
 
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',

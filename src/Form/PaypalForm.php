@@ -20,8 +20,11 @@ class PaypalForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
 
     $entity = $this->entity;
-
+    /** @var \Drupal\node\Entity\Node $node */
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $form['price']['widget'][0]['value']['#default_value'] = 400;
     $form['actions']['submit']['#value'] = $this->t('Pay with PayPal');
+    //dump($form);die;
     return $form;
   }
 
