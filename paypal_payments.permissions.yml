@@ -27,41 +27,4 @@ view published paypal entities:
 
 view unpublished paypal entities:
   title: 'View unpublished Paypal entities'
-add paypal entities:
-  title: 'Create new Paypal entities'
 
-administer paypal entities:
-  title: 'Administer Paypal entities'
-  description: 'Allow to access the administration form to configure Paypal entities.'
-  restrict access: true
-
-delete paypal entities:
-  title: 'Delete Paypal entities'
-
-edit paypal entities:
-  title: 'Edit Paypal entities'
-
-view published paypal entities:
-  title: 'View published Paypal entities'
-
-view unpublished paypal entities:
-  title: 'View unpublished Paypal entities'
-add paypal entities:
-  title: 'Create new Paypal entities'
-
-administer paypal entities:
-  title: 'Administer Paypal entities'
-  description: 'Allow to access the administration form to configure Paypal entities.'
-  restrict access: true
-
-delete paypal entities:
-  title: 'Delete Paypal entities'
-
-edit paypal entities:
-  title: 'Edit Paypal entities'
-
-view published paypal entities:
-  title: 'View published Paypal entities'
-
-view unpublished paypal entities:
-  title: 'View unpublished Paypal entities'

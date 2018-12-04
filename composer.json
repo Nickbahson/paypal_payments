@@ -1,3 +1,16 @@
 {
-  
+  "name": "Nickbahson/paypal_payments",
+  "description": "Module for that integrates paypal payments into your drupal site ",
+  "type": "drupal-module",
+  "homepage": "https://github.com/Nickbahson/paypal_payments",
+  "support": {
+    "issues": "https://github.com/Nickbahson/paypal_payments/issues",
+    "documentation": "https://github.com/Nickbahson/paypal_payments",
+    "source": "https://github.com/Nickbahson/paypal_payments.git"
+  },
+
+  "license": "GPL-2.0+",
+  "require": {
+    "paypal/rest-api-sdk-php":"dev-2.0-beta"
+  }
 }

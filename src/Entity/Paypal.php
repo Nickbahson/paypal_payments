@@ -37,11 +37,12 @@ use Drupal\user\UserInterface;
  *   admin_permission = "administer paypal entities",
  *   entity_keys = {
  *     "id" = "id",
- *     "label" = "name",
+ *     "label" = "sku",
  *     "uuid" = "uuid",
  *     "uid" = "user_id",
  *     "langcode" = "langcode",
  *     "status" = "status",
+ *      "payment_status" = "payment_status",
  *   },
  *   links = {
  *     "canonical" = "/content/paypal/paypal/{paypal}",
@@ -70,15 +71,30 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
   /**
    * {@inheritdoc}
    */
-  public function getName() {
-    return $this->get('name')->value;
+  public function getSku() {
+    return $this->get('sku')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setName($name) {
-    $this->set('name', $name);
+  public function setSku($sku) {
+    $this->set('sku', $sku);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPaymentStatus(){
+    return $this->get('payment_status')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPaymentStatus($payment_status){
+    $this->set('payment_status', $payment_status);
     return $this;
   }
 
@@ -173,9 +189,9 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['name'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Name'))
-      ->setDescription(t('The name of the Paypal entity.'))
+    $fields['sku'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Sku'))
+      ->setDescription(t('The Sku of the Paypal entity.'))
       ->setSettings([
         'max_length' => 50,
         'text_processing' => 0,
@@ -192,7 +208,7 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE)
-      ->setRequired(TRUE);
+      ->setRequired(FALSE);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Publishing status'))
@@ -203,7 +219,6 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
         'weight' => -3,
       ]);
 
-    #TODO:ADDED
     $fields['entity_id'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Entity ID'))
       ->setDescription(t('The ID of the entity of which this Payment is a related to.'))
@@ -228,17 +243,21 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
       ])
     ;
 
-    $fields['status'] = BaseFieldDefinition::create('string')
-      ->setLabel(t('Status'))
+    $fields['payment_status'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Payment Status'))
       ->setDescription(t('The Payment status'))
-      ->setRequired(TRUE)
+      ->setRequired(FALSE)
+      ->setDefaultValue('Failed')
+      /**
+       * TODO:: get a better way to set the default value for field
+       * payment_status
+       */
 
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
         'weight' => -4,
       ])
     ;
-    #TODO: End of ADD
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
@@ -290,6 +309,5 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
     #$this->setEntityId();
     #$this->setPrice();
   }
-
 
 }

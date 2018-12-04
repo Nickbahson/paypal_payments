@@ -1,4 +1,3 @@
-
 # Paypal menu items definition
 entity.paypal.collection:
   title: 'Paypal list'
@@ -12,3 +11,10 @@ paypal.admin.structure.settings:
   description: 'Configure Paypal entities'
   route_name: paypal.settings
   parent: system.admin_structure
+
+paypal_payments.paypal_payments_settings_form:
+  title: 'Paypal Payments Settings'
+  description: 'Set paypal credentials'
+  route_name: paypal_payments.paypal_payments_settings_form
+  parent: system.admin_config_content
+  weight: 5

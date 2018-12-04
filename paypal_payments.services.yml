@@ -3,6 +3,20 @@ services:
     class: Drupal\paypal_payments\Services\PaypalPaymentsLazyBuilders
     arguments: ['@entity.manager','@entity.form_builder','@current_user','@module_handler','@renderer']
 
-  paypal.price_save:
-    class: Drupal\paypal_payments\Services\OnPaypalPriceSave
+  paypal_payments.settings:
+    class: Drupal\paypal_payments\Services\paypalSettings
     arguments: []
+
+  paypal_payments.altered_url:
+    class: Drupal\paypal_payments\Services\paypalRouteSubscriber
+    arguments: ['@entity_field.manager','@request_stack','@paypal_payments.settings','@entity.manager', '@path.current']
+    tags:
+      - {name: event_subscriber}
+
+  #paypal_payments.paypal_api_calls:
+    #class: Drupal\paypal_payments\Services\paypalApiCalls
+    #arguments: []
+
+  paypal_payments.paypal_entity_save:
+    class: Drupal\paypal_payments\Services\paypalPaymentsEntitySave
+    arguments: ['@entity.repository', '@entity.manager']

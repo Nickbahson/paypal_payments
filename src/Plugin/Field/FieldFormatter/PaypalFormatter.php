@@ -3,10 +3,8 @@
 namespace Drupal\paypal_payments\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityFormBuilderInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
@@ -14,6 +12,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -34,8 +33,8 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
    */
   public static function defaultSettings() {
     return [
-      //TODO: Add settings maybe
-    ] + parent::defaultSettings();
+        //TODO: Add settings maybe
+      ] + parent::defaultSettings();
   }
 
   /**
@@ -144,15 +143,27 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
     $output = [];
 
     $field_name = $this->fieldDefinition->getName();
-    $entity = $items->getEntity();#TODO :: create entity
+    $entity = $items->getEntity();
 
-    $status = $items->status;
+    /**
+     * We get the Price Value for use in our paypal checkout
+     *
+     */
+    foreach ($items as $item) {
+      if (isset($item)) {
+        $paypalPrice = $this->viewPrice($item);
+      }
+    }
 
-    $paypal_settings = $this->getFieldSettings();
+    //var_dump($paypalPrice);#TODO continue from here...GAME AND CELEBRATE THIS AWESOME AWAITED WIN!!!!!
 
     $elements['#cache']['contexts'][] = 'user.permissions';
 
     if ($this->currentUser->hasPermission('access paypal_payments form')){
+      $output['price'] = [
+        '#markup' => t('Price | '. $paypalPrice),
+      ];
+
       $output['paypal_form'] = [
         '#lazy_builder' => [
           'paypal.lazy_builders:renderForm',
@@ -160,23 +171,17 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
             $entity->getEntityTypeId(),
             $entity->id(),
             $field_name,
+            $paypalPrice,
           ],
         ],
-        '#create_placeholder' => TRUE,
+        #'#create_placeholder' => TRUE,
       ];
-    }
 
-    foreach ($items as $delta => $item) {
-      $price = $item->getValue();
-      $elements[$delta] = [
-        'price' => [
-          '#markup' => $this->t('Price | ' .$price['value']),
-        ],
-      ];
     }
 
     $elements[] = $output + [
-      'paypal_form' => [],
+        'price' => [],
+        'paypal_form' => [],
       ];
 
     return $elements;
@@ -187,8 +192,8 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     return [
-      // Implement settings form.
-    ] + parent::settingsForm($form, $form_state);
+        // Implement settings form.
+      ] + parent::settingsForm($form, $form_state);
   }
 
   /**
@@ -214,6 +219,20 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
     // The text value has no text format assigned to it, so the user input
     // should equal the output, including newlines.
     return nl2br(Html::escape($item->value));
+  }
+
+  /**
+   * Get the Price of this particular entity
+   * TODO: make this alterable via events/hooks
+   *
+   * @param \Drupal\Core\Field\FieldItemInterface $item
+   *   One field item.
+   *
+   * @return string
+   *   The textual output generated.
+   */
+  public function viewPrice(FieldItemInterface $item) {
+    return $this->viewValue($item);
   }
 
 }

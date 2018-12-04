@@ -21,7 +21,7 @@ interface PaypalInterface extends ContentEntityInterface, EntityChangedInterface
    * @return string
    *   Name of the Paypal.
    */
-  public function getName();
+  public function getSku();
 
   /**
    * Sets the Paypal name.
@@ -32,7 +32,7 @@ interface PaypalInterface extends ContentEntityInterface, EntityChangedInterface
    * @return \Drupal\paypal_payments\Entity\PaypalInterface
    *   The called Paypal entity.
    */
-  public function setName($name);
+  public function setSku($name);
 
   /**
    * Gets the Paypal creation timestamp.
