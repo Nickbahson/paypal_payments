@@ -19,7 +19,7 @@ RECOMMENDED MODULES
 INSTALLATION
 ------------
 Since this is not yet an official drupal module, the easiest way to install it would be to download this code into your
-/modules folder and after install paypal php sdk (`composer require paypal/rest-api-sdk-php:dev-2.0-beta`) as the module
+/modules folder and after install paypal php sdk (`composer require paypal/rest-api-sdk-php:*`) as the module
  extends that library.
 `https://github.com/paypal/PayPal-PHP-SDK`
 
