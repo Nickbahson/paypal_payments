@@ -1,6 +1,7 @@
 <?php
 /**
  * Defines the database table(fields) for paypal_payments settings
+ * and paypal_payments receipts
  */
 function paypal_payments_schema(){
   $schema['paypal_payments_settings'] = [
@@ -27,8 +28,50 @@ function paypal_payments_schema(){
         'not null' => TRUE,
         'default' => '',
       ],
+      'store_currency' => [
+        'description' => 'Store currency to set',
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+        'default' => '',
+      ],
     ],
-    'primary key' => ['environment']
+    'primary key' => ['environment'],
+  ];
+
+  $schema['paypal_payments_receipts'] = [
+    'description' => 'Stores the payment receipts.',
+    'fields' => [
+      'payer_email' => [
+        'description' => 'The email address of the payer',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'amount' => [
+        'description' => 'The amount in store currency paid',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+
+      ],
+      'entity_id' => [
+        'description' => 'The {node}.nid for this rsvp.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+        'default' => 0,
+      ],
+      'sale_id' => [
+        'description' => 'The sale id provided by paypal.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => ''
+      ],
+    ],
+    'primary key' => ['payer_email'],
   ];
 
   return $schema;

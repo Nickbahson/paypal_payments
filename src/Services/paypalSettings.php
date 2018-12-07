@@ -39,11 +39,12 @@ class paypalSettings {
 
     else {
       $insert = Database::getConnection()->insert('paypal_payments_settings');
-      $insert->fields(['environment', 'client_id', 'client_secret'])
+      $insert->fields(['environment', 'client_id', 'client_secret', 'store_currency'])
         ->values([
-          'environment' => $this->getEnvironment($form_state),
+          'environment' => $this->getInputEnvironment($form_state),
           'client_id' => $form_state->getValue('client_id'),
           'client_secret' =>  $form_state->getValue('client_secret'),
+          'store_currency' => $form_state->getValue('store_currency'),
         ])
         ->execute();
 
@@ -79,9 +80,10 @@ class paypalSettings {
     //TODO:: work on updating shit now..what what update query
     Database::getConnection()->update('paypal_payments_settings')
       ->fields([
-        'environment' =>$this->getEnvironment($form_state),
+        'environment' =>$this->getInputEnvironment($form_state),
         'client_id' => $form_state->getValue('client_id'),
         'client_secret' =>$form_state->getValue('client_secret'),
+        'store_currency' => $form_state->getValue('store_currency'),
       ])
       ->execute();
     \Drupal::messenger()->addMessage('Your PayPal Settings have been UPDATED');
@@ -102,7 +104,7 @@ class paypalSettings {
    * from the form input
    * throw for no checkbox is checked
    */
-  protected function getEnvironment(FormStateInterface $form_state){
+  protected function getInputEnvironment(FormStateInterface $form_state){
     $env = $form_state->getValue('environment');
     foreach (array_filter($env) as $theEnvironment) {
       return $theEnvironment;
@@ -116,6 +118,7 @@ class paypalSettings {
     return new Exception('Please set you paypal payments environment');
   }
 
+
   /**
    * Helper function for use in getPaypalCredentials()
    *  and ifCredentialsAreSet()
@@ -123,7 +126,7 @@ class paypalSettings {
    */
   protected function querySettingsTable(){
     $select = Database::getConnection()->select('paypal_payments_settings', 'ps');
-    $select->fields('ps', ['environment', 'client_id', 'client_secret']);
+    $select->fields('ps', ['environment', 'client_id', 'client_secret', 'store_currency']);
     $results = $select->execute();
 
     return $results;
@@ -165,6 +168,14 @@ class paypalSettings {
   public function getClientSecret(){
     $clientSecret = $this->getSetting();
     return $clientSecret['client_secret'];
+  }
+
+  /**
+   * Get the set store currency from the db
+   */
+  public function getSetStoreCurrency(){
+    $storeCurrency = $this->getSetting();
+    return $storeCurrency['store_currency'];
   }
 
   /**

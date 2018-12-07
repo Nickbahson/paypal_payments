@@ -33,7 +33,7 @@ use Drupal\user\UserInterface;
  *       "html" = "Drupal\paypal_payments\PaypalHtmlRouteProvider",
  *     },
  *   },
- *   base_table = "paypal",
+ *   base_table = "paypal_payments",
  *   admin_permission = "administer paypal entities",
  *   entity_keys = {
  *     "id" = "id",
@@ -42,7 +42,7 @@ use Drupal\user\UserInterface;
  *     "uid" = "user_id",
  *     "langcode" = "langcode",
  *     "status" = "status",
- *      "payment_status" = "payment_status",
+ *     "payment_status" = "payment_status",
  *   },
  *   links = {
  *     "canonical" = "/content/paypal/paypal/{paypal}",
@@ -160,32 +160,37 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
 
   /**
    * {@inheritdoc}
+   * we wont use the form, for flexibility in our functionality for now
+   * we will only use the price field in our paypal request
+   * and use the service paypal_payments.entity_save to write/update values
+   * to our database on successful payments and refunds
+   * TODO:: find a better way around this
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['user_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Authored by'))
+      ->setLabel(t('Payer'))
       ->setDescription(t('The user ID of author of the Paypal entity.'))
       ->setRevisionable(TRUE)
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default')
       ->setTranslatable(TRUE)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'author',
-        'weight' => 0,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'weight' => 5,
-        'settings' => [
-          'match_operator' => 'CONTAINS',
-          'size' => '60',
-          'autocomplete_type' => 'tags',
-          'placeholder' => '',
-        ],
-      ])
+      #->setDisplayOptions('view', [
+        #'label' => 'hidden',
+        #'type' => 'author',
+        #'weight' => 0,
+     # ])
+      #->setDisplayOptions('form', [
+        #'type' => 'entity_reference_autocomplete',
+        #'weight' => 5,
+        #'settings' => [
+          #'match_operator' => 'CONTAINS',
+          #'size' => '60',
+          #'autocomplete_type' => 'tags',
+         # 'placeholder' => '',
+        #],
+      #])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
@@ -197,37 +202,39 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
         'text_processing' => 0,
       ])
       ->setDefaultValue('')
-      ->setDisplayOptions('view', [
-        'label' => 'above',
-        'type' => 'string',
-        'weight' => -4,
-      ])
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -4,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE)
-      ->setRequired(FALSE);
+     # ->setDisplayOptions('view', [
+        #'label' => 'above',
+        #'type' => 'string',
+        #'weight' => -4,
+      #])
+      #->setDisplayOptions('form', [
+        #'type' => 'string_textfield',
+        #'weight' => -4,
+      #])
+      #->setDisplayConfigurable('form', TRUE)
+      #->setDisplayConfigurable('view', TRUE)
+      #->setRequired(FALSE)
+    ;
 
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Publishing status'))
       ->setDescription(t('A boolean indicating whether the Paypal is published.'))
       ->setDefaultValue(TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'boolean_checkbox',
-        'weight' => -3,
-      ]);
+      #->setDisplayOptions('form', [
+        #'type' => 'boolean_checkbox',
+        #'weight' => -3,
+      #])
+    ;
 
     $fields['entity_id'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Entity ID'))
       ->setDescription(t('The ID of the entity of which this Payment is a related to.'))
       ->setRequired(TRUE)
 
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -4,
-      ])
+      #->setDisplayOptions('form', [
+        #'type' => 'string_textfield',
+        #'weight' => -4,
+      #])
 
     ;
 
@@ -237,10 +244,10 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
       ->setRequired(TRUE)
       ->setDefaultValue(0)
 
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -4,
-      ])
+     # ->setDisplayOptions('form', [
+        #'type' => 'string_textfield',
+        #'weight' => -4,
+      #])
     ;
 
     $fields['payment_status'] = BaseFieldDefinition::create('string')
@@ -253,10 +260,10 @@ class Paypal extends ContentEntityBase implements PaypalInterface {
        * payment_status
        */
 
-      ->setDisplayOptions('form', [
-        'type' => 'string_textfield',
-        'weight' => -4,
-      ])
+      #->setDisplayOptions('form', [
+        #'type' => 'string_textfield',
+        #'weight' => -4,
+      #])
     ;
 
     $fields['created'] = BaseFieldDefinition::create('created')

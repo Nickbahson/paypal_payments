@@ -49,13 +49,27 @@ class PayPalPaymentsSettingsForm extends FormBase {
       'sandbox' => 'Sandbox',
     ];
 
+    /**
+     * Set the currency manually,
+     * TODO::we should import this and append to our field item plugin instead
+     * Add more
+     */
+    $currency = [
+      'USD' => 'USD',
+      'GBP' => 'GBP',
+      'AUD' => 'AUD',
+      'CAD' => 'CAD',
+      'EUR' => 'EUR',
+      'JPY' => 'JPY'
+    ];
+
     $form['client_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Client ID'),
       '#description' => $this->t('The Client ID from PayPal'),
       '#maxlength' => 128,
       '#size' => 64,
-      '#weight' => '0',
+      '#required' => TRUE,
     ];
     $form['client_secret'] = [
       '#type' => 'textfield',
@@ -63,15 +77,21 @@ class PayPalPaymentsSettingsForm extends FormBase {
       '#description' => $this->t('The Client Secret Key From PayPal'),
       '#maxlength' => 128,
       '#size' => 64,
-      '#weight' => '0',
+      '#required' => TRUE,
     ];
     $form['environment'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Environment'),
       '#options' => $environmentTypes,
-      //'#default_value' => $environmentTypes['sandbox'],
       '#description' => $this->t('Select either; live or sandbox(for development)'),
-      '#weight' => '0',
+      '#required' => TRUE,
+    ];
+    $form['store_currency'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Store Currency'),
+      '#options' => $currency,
+      '#description' => $this->t('Select the currency to use with your store'),
+      '#required' => TRUE,
     ];
     $form['submit'] = [
       '#type' => 'submit',

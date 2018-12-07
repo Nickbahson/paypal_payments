@@ -9,14 +9,14 @@ services:
 
   paypal_payments.altered_url:
     class: Drupal\paypal_payments\Services\paypalRouteSubscriber
-    arguments: ['@entity_field.manager','@request_stack','@paypal_payments.settings','@entity.manager', '@path.current']
+    arguments: ['@entity_field.manager','@request_stack','@paypal_payments.settings','@entity.manager', '@path.current', '@paypal_payments.paypal_entity_save','@paypal_payments.paypal_form', '@current_user']
     tags:
       - {name: event_subscriber}
 
-  #paypal_payments.paypal_api_calls:
-    #class: Drupal\paypal_payments\Services\paypalApiCalls
-    #arguments: []
-
   paypal_payments.paypal_entity_save:
     class: Drupal\paypal_payments\Services\paypalPaymentsEntitySave
-    arguments: ['@entity.repository', '@entity.manager']
+    arguments: ['@database','@request_stack' ,'@uuid','@entity.repository', '@entity.manager']
+
+  paypal_payments.paypal_form:
+    class: Drupal\paypal_payments\Form\PaypalForm
+    arguments: ['@entity.repository', '@paypal_payments.settings', '@entity_field.manager']
