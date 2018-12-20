@@ -1,18 +1,8 @@
 services:
-  #paypal.lazy_builders:
-    #class: Drupal\paypal_payments\Services\PaypalPaymentsLazyBuilders
-    #arguments: ['@entity.manager','@entity.form_builder','@current_user','@module_handler','@renderer']
-
   paypal_payments.settings:
     class: Drupal\paypal_payments\Services\paypalSettings
     arguments: []
 
-  #paypal_payments.altered_url:
-    #class: Drupal\paypal_payments\Services\paypalRouteSubscriber
-    #arguments: ['@entity_field.manager','@request_stack','@paypal_payments.settings','@entity.manager', '@path.current', '@paypal_payments.paypal_entity_save','@paypal_payments.paypal_form', '@current_user']
-    #arguments: ['@entity_field.manager','@request_stack','@paypal_payments.settings','@entity.manager', '@path.current', '@paypal_payments.paypal_entity_save', '@current_user']
-    #tags:
-      #- {name: event_subscriber}
   paypal_payments.node_field_subscriber:
     class: Drupal\paypal_payments\Services\paypalNodeViewSubscriber
     arguments: ['@entity_field.manager','@paypal_payments.settings', '@entity.manager', '@node.route_subscriber', '@request_stack']
@@ -22,7 +12,3 @@ services:
   paypal_payments.paypal_entity_save:
     class: Drupal\paypal_payments\Services\paypalPaymentsEntitySave
     arguments: ['@database','@request_stack' ,'@uuid','@entity.repository', '@entity.manager']
-
-  #paypal_payments.paypal_form:
-    #class: Drupal\paypal_payments\Form\PaypalForm
-    #arguments: ['@entity.repository', '@paypal_payments.settings', '@entity_field.manager']

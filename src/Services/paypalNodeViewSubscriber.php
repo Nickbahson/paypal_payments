@@ -112,12 +112,7 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
           }
         }
       }
-
-      //dd($this->entity_field_manager)
-      $build['extra_markup'] = [
-        '#markup' => 'this is extra markup',
-
-      ];
+      
     }
   }
 

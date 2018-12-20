@@ -3,5 +3,8 @@ type: module
 description: 'Provides a way to collect money via paypal on nodes/product entities'
 core: 8.x
 
+dependencies:
+- hook_event_dispatcher
+
 package: 'Payments'
 configure: paypal_payments.paypal_payments_settings_form
