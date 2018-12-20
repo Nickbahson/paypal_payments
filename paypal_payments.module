@@ -31,5 +31,10 @@ function paypal_payments_theme() {
     'paypal_payments' => [
       'render element' => 'children',
     ],
+
+    'field--field-paypal' => [
+      'template' => 'field--field-paypal',
+      'variables' => ['paypal_payments_values' => NULL,],
+    ],
   ];
 }

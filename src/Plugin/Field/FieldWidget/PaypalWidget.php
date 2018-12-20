@@ -34,13 +34,23 @@ class PaypalWidget extends WidgetBase {
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
-    $element['placeholder'] = [
+    $elements = [];
+
+    $elements['size'] = [
+      '#type' => 'number',
+      '#title' => t('Size of textfield'),
+      '#default_value' => $this->getSetting('size'),
+      '#required' => TRUE,
+      '#min' => 1,
+    ];
+    $elements['placeholder'] = [
       '#type' => 'textfield',
       '#title' => t('Placeholder'),
       '#default_value' => $this->getSetting('placeholder'),
       '#description' => t('Text that will be shown inside the field until a value is entered. This hint is usually a sample value or a brief description of the expected format.'),
     ];
-    return $element;
+
+    return $elements;
   }
 
   /**
@@ -64,6 +74,17 @@ class PaypalWidget extends WidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+    /**
+    $element['value'] = $element + [
+    '#type' => 'textfield',
+    '#default_value' => isset($items[$delta]->value) ? $items[$delta]->value : NULL,
+    '#size' => $this->getSetting('size'),
+    '#placeholder' => $this->getSetting('placeholder'),
+    '#maxlength' => $this->getFieldSetting('max_length'),
+    ];
+
+    return $element;
+     */
     $value = isset($items[$delta]->value) ? $items[$delta]->value : NULL;
     $field_settings = $this->getFieldSettings();
 
@@ -103,13 +124,6 @@ class PaypalWidget extends WidgetBase {
     }
 
     return ['value' => $element];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function errorElement(array $element, ConstraintViolationInterface $error, array $form, FormStateInterface $form_state) {
-    return $element['value'];
   }
 
 }

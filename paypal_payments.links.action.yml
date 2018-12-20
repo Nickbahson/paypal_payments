@@ -1,5 +1,5 @@
-entity.paypal.add_form:
-  route_name: entity.paypal.add_form
-  title: 'Add Paypal'
-  appears_on:
-    - entity.paypal.collection
+#entity.paypal.add_form:
+  #route_name: entity.paypal.add_form
+  #title: 'Add Paypal'
+  #appears_on:
+    #- entity.paypal.collection

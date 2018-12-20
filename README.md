@@ -14,6 +14,7 @@ INTRODUCTION
 
 RECOMMENDED MODULES
 ------------
+hook_event_dispatcher @ https://www.drupal.org/project/hook_event_dispatcher
 
 
 INSTALLATION

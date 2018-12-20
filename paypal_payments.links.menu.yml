@@ -1,20 +1,21 @@
 # Paypal menu items definition
-entity.paypal.collection:
-  title: 'Paypal list'
-  route_name: entity.paypal.collection
-  description: 'List Paypal entities'
-  parent: system.admin_structure
-  weight: 100
+#entity.paypal.collection:
+  #title: 'Paypal list'
+  #route_name: entity.paypal.collection
+  #description: 'List Paypal entities'
+  #parent: system.admin_structure
+  #weight: 100
 
-paypal.admin.structure.settings:
-  title: 'Paypal settings'
-  description: 'Configure Paypal entities'
-  route_name: paypal.settings
-  parent: system.admin_structure
+#paypal.admin.structure.settings:
+  #title: 'Paypal settings'
+  #description: 'Configure Paypal entities'
+  #route_name: paypal.settings
+  #parent: system.admin_structure
 
 paypal_payments.paypal_payments_settings_form:
   title: 'Paypal Payments Settings'
   description: 'Set paypal credentials'
   route_name: paypal_payments.paypal_payments_settings_form
-  parent: system.admin_config_content
+  #parent: system.admin_config_content
+  parent: system.admin_config
   weight: 5
