@@ -144,7 +144,7 @@ class PaypalPaymentsForm extends FormBase {
     $sku = $this->generateSkuFromNodeTitle();
     $product = $sku; #make SKU
     $price = (float)$itemPrice;
-    $shipping = 5.00;
+    $shipping = 0.00;
 
     $total = $price + $shipping;
 

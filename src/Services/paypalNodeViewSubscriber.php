@@ -14,6 +14,7 @@ use Drupal\node\Routing\RouteSubscriber;
 use PayPal\Api\Payment;
 use PayPal\Api\PaymentExecution;
 use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Exception\PayPalConnectionException;
 use PayPal\Rest\ApiContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -49,17 +50,24 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
    */
   private $request_stack;
 
+  /**
+   * @var \Drupal\paypal_payments\Services\onPaypalPaymentsResponse
+   */
+  private $onPaypalPaymentsResponse;
+
 
   public function __construct(EntityFieldManager $entity_field_manager,
                               paypalSettings $paypal_settings,
                               EntityManager $entity_manager,
                               RouteSubscriber $node_route_subscriber,
-                              RequestStack $request_stack) {
+                              RequestStack $request_stack,
+                              onPaypalPaymentsResponse $onPaypalPaymentsResponse) {
     $this->entity_field_manager = $entity_field_manager;
     $this->paypal_settings = $paypal_settings;
     $this->entity_manager = $entity_manager;
     $this->node_route_subscriber = $node_route_subscriber;
     $this->request_stack = $request_stack;
+    $this->onPaypalPaymentsResponse = $onPaypalPaymentsResponse;
   }
 
   public function alterEntityView(EntityViewEvent $event){
@@ -68,12 +76,14 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
     if ($entity instanceof NodeInterface) {
       $build = &$event->getBuild();
       /**
-       * When node is on full view this is when to show paypal form
+       * When node is on full view, we show our paypal form
        * widget so our event fires only then
        */
       if ($event->getViewMode() === 'full'){
         $request = $this->request_stack->getCurrentRequest();
         $bundle = $entity->bundle();
+        $nid = $entity->id();
+        $uid = 0;
         $fields = $this->entity_field_manager->getFieldDefinitions('node', $bundle);
         foreach ($fields as $key => $field){
 
@@ -81,20 +91,25 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
            * Check if the node has a paypal field item
            */
           if ($field->getType() === 'field_paypal'){
-            //TODO:: create a variable with the token..maybe store in keyvalue and compare with return token for added security
+
             $current_path = $this->getRedirectRoute();
 
             $isPaypalReturn = $request->query->get('success');
+
             /**
              * if authorization was successful
              */
             if ($isPaypalReturn === 'true'){
+              $request = $this->request_stack->getCurrentRequest();
+              $paymentId = $request->query->get('paymentId');
+              $token = $request->query->get('token');
+              $payerId = $request->query->get('PayerID');
+              $apiContext = $this->getApiContext();
 
-              $this->chargePaypal(); #charge account
-
+              $this->chargePaypal();
+              $this->confirmPayment($paymentId, $apiContext, $nid, $uid);
               $response = new RedirectResponse($current_path);
               $response->send();
-              #$response_event->setResponse($response);
             }
 
             /**
@@ -105,14 +120,11 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
             if ($isPaypalReturn === 'false'){
               $response = new RedirectResponse($current_path);
               $response->send();
-              #$response_event->setResponse($response);
               drupal_set_message(t('There was a problem authorizing the Charge'));
             }
-
           }
         }
       }
-      
     }
   }
 
@@ -169,6 +181,26 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
   }
 
   /**
+   * Returns the required credentials/settings for making
+   * paypal api calls
+   */
+  protected function getApiContext(){
+    $apiContext = new ApiContext(
+      new OAuthTokenCredential(
+        $this->paypal_settings->getClientId(),
+        $this->paypal_settings->getClientSecret()
+      )
+    );
+
+    #get config environment and set
+    $apiContext->setConfig(
+      ['mode' => $this->paypal_settings->getSetEnvironment()]
+    );
+
+    return $apiContext;
+  }
+
+  /**
    * If auth was a success and we got paymentID, The TOKEN and the
    * PayerID go ahead and charge the user and post to database
    */
@@ -178,33 +210,60 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
     $token = $request->query->get('token');
     $payerId = $request->query->get('PayerID');
 
-    //Create a charge object
-    $paypal = new ApiContext(
-      new OAuthTokenCredential(
-        $this->paypal_settings->getClientId(),
-        $this->paypal_settings->getClientSecret()
-      )
-    );
+    $apiContext = $this->getApiContext();
 
-    #get config environment and set
-    $paypal->setConfig(
-      ['mode' => $this->paypal_settings->getSetEnvironment()]
-    );
-
-    $payment = Payment::get($paymentId, $paypal);
+    $payment = Payment::get($paymentId, $apiContext);
 
     // Execute payment
     $execute = new PaymentExecution();
     $execute->setPayerId($payerId);
 
     try {
-      $payment->execute($execute, $paypal);
+      $payment->execute($execute, $apiContext);
 
-      //TODO:: Load from paypal form and save to paypal_payments
-      drupal_set_message('Payment success');
-    } catch (Exception $exception) {
-      $data = json_decode($exception->getData());
-      echo $data->message;
+    } catch (PayPalConnectionException $exception) {
+      //Payment failed
+      echo $exception->getCode();
+      echo $exception->getData();
+      die($exception);
+    } catch (Exception $ex) {
+      dd($ex);
     }
+  }
+
+  /**
+   * Confirm payment approval and post to database
+   */
+  protected function confirmPayment($paymentId, $apiContext, $nid, $uid){
+    $payment = Payment::get($paymentId, $apiContext);
+
+    // prepare values for inserting into our tables
+    $sku = 'fake sku';
+    $transaction_id = $payment->getId();
+    $payment_amount = $payment->transactions[0]->amount->total;
+    $payment_status = $payment->getState();
+    $invoice_id = $payment->transactions[0]->invoice_number;
+    $payer_email = $payment->payer->payer_info->email;
+    $sale_id = $payment->transactions[0]->related_resources[0]->sale->id;
+
+    /**
+     * If the payment is successful it will have the state 'approved'.
+     * Before we executed the payment it would have had the state 'created'.
+     * If the request failed after we executed the payment the state would
+     * be 'failed'
+     */
+    if ($payment_status === 'approved') {//post to DB
+
+      /**
+       * call our service method and post the data to the two tables
+       * check Drupal\paypal_payments\Services\onPaypalPaymentsResponse
+       */
+      $this->onPaypalPaymentsResponse->insertIntoPaypalPayments($nid, $transaction_id, $sku, $uid, $payment_status);
+      $this->onPaypalPaymentsResponse->insertIntoReceipts($nid, $transaction_id, $payer_email, $payment_amount, $sale_id, $invoice_id);
+      drupal_set_message('Payment success');#TODO:: more detailed maybe
+    } else {
+      drupal_set_message('Unable to charge your account');
+    }
+
   }
 }

@@ -5,6 +5,7 @@ namespace Drupal\paypal_payments\Plugin\Field\FieldFormatter;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityFormBuilderInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
@@ -12,6 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\paypal_payments\Services\paypalSettings;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -26,7 +28,47 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-class PaypalFormatter extends FormatterBase {
+class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInterface{
+
+  /**
+   * @var \Drupal\paypal_payments\Services\paypalSettings
+   */
+  private $paypalSettings;
+
+  /**
+   * Creates an instance of the plugin.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container to pull out services used in the plugin.
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   *
+   * @return static
+   *   Returns an instance of this plugin.
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $plugin_id,
+      $plugin_definition,
+      $configuration['field_definition'],
+      $configuration['settings'],
+      $configuration['label'],
+      $configuration['view_mode'],
+      $configuration['third_party_settings'],
+      $container->get('paypal_payments.settings')
+    );
+  }
+
+  public function __construct($plugin_id, $plugin_definition, \Drupal\Core\Field\FieldDefinitionInterface
+  $field_definition, array $settings, $label, $view_mode, array $third_party_settings, paypalSettings $paypalSettings) {
+    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
+
+    $this->paypalSettings = $paypalSettings;
+  }
 
   /**
    * {@inheritdoc}
@@ -65,10 +107,9 @@ class PaypalFormatter extends FormatterBase {
 
     foreach ($items as $delta => $item) {
       $elements[$delta] = [
-        //'#markup' => 'Ksh | '.$this->viewValue($item),
         '#theme' => 'field--field-paypal',
         '#paypal_payments_values' => [
-          'value' => 'Store Currency | '.$this->viewValue($item),
+          'value' => $this->paypalSettings->getSetStoreCurrency().' | '.$this->viewValue($item),#$this->paypal_settings->getSetStoreCurrency().
           'form' => $form,
         ]
       ];

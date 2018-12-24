@@ -5,10 +5,10 @@ services:
 
   paypal_payments.node_field_subscriber:
     class: Drupal\paypal_payments\Services\paypalNodeViewSubscriber
-    arguments: ['@entity_field.manager','@paypal_payments.settings', '@entity.manager', '@node.route_subscriber', '@request_stack']
+    arguments: ['@entity_field.manager','@paypal_payments.settings', '@entity.manager', '@node.route_subscriber', '@request_stack','@paypal_payments.on_paypal_response']
     tags:
       - {name: event_subscriber}
 
-  paypal_payments.paypal_entity_save:
-    class: Drupal\paypal_payments\Services\paypalPaymentsEntitySave
+  paypal_payments.on_paypal_response:
+    class: Drupal\paypal_payments\Services\onPaypalPaymentsResponse
     arguments: ['@database','@request_stack' ,'@uuid','@entity.repository', '@entity.manager']
