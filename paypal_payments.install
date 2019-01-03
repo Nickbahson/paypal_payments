@@ -42,6 +42,12 @@ function paypal_payments_schema(){
   $schema['paypal_payments_receipts'] = [
     'description' => 'Stores the payment receipts.',
     'fields' => [
+      'id' => [
+        'description' => 'The Primary identifier for the record.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
       'payer_email' => [
         'description' => 'The email address of the payer',
         'type' => 'varchar',
@@ -85,7 +91,7 @@ function paypal_payments_schema(){
         'default' => ''
       ]
     ],
-    'primary key' => ['payer_email'],
+    'primary key' => ['id'],
   ];
 
   #on paypal fund received successfully

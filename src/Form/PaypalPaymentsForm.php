@@ -8,12 +8,11 @@
 
 namespace Drupal\paypal_payments\Form;
 
-
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityFieldManager;
+use Drupal\Core\Path\AliasManager;
 use Drupal\Core\Routing\TrustedRedirectResponse;
-
 use Drupal\paypal_payments\Services\paypalSettings;
 use PayPal\Api\Amount;
 use PayPal\Api\Details;
@@ -23,8 +22,6 @@ use PayPal\Api\Payer;
 use PayPal\Api\Payment;
 use PayPal\Api\RedirectUrls;
 use PayPal\Api\Transaction;
-use PayPal\Auth\OAuthTokenCredential;
-use PayPal\Rest\ApiContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -40,15 +37,23 @@ class PaypalPaymentsForm extends FormBase {
    */
   private $entity_field_manager;
 
-  public function __construct(paypalSettings $paypal_settings, EntityFieldManager $entity_field_manager) {
+  /**
+   * @var \Drupal\Core\Path\AliasManager
+   */
+  private $aliasManager;
+
+  public function __construct(paypalSettings $paypal_settings, EntityFieldManager $entity_field_manager,
+                              AliasManager $aliasManager) {
     $this->paypal_settings = $paypal_settings;
     $this->entity_field_manager = $entity_field_manager;
+    $this->aliasManager = $aliasManager;
   }
 
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('paypal_payments.settings'),
-      $container->get('entity_field.manager')
+      $container->get('entity_field.manager'),
+      $container->get('path.alias_manager')
     );
   }
 
@@ -84,8 +89,6 @@ class PaypalPaymentsForm extends FormBase {
       '#value' => $this->t('Pay With Paypal'),
     ];
 
-    #dd($form);
-
     return $form;
   }
 
@@ -112,30 +115,17 @@ class PaypalPaymentsForm extends FormBase {
      * Paypal request , should be initiated on form validation
      */
     $node = \Drupal::routeMatch()->getParameter('node');
-
-    $current_path = $this->getRequest()->getSchemeAndHttpHost().$this->getRequest()->getBaseUrl().$this->getRequest()->getPathInfo();
+    /**
+     * set current path to be the one of the node in the url
+     * in case there are multiple node entities related to it(the node)
+     */
+    $current_path = $node->toUrl()->setAbsolute()->toString();
 
     /**
      * get the SET environment, clientID and clientSecret from paypal settings
      */
-    $environment = $this->paypal_settings->getSetEnvironment();
-    $clientID = $this->paypal_settings->getClientId();
-    $clientSecret = $this->paypal_settings->getClientSecret();
-    //dd($clientID . ' | ' . $clientSecret);
 
-    $request = \Drupal::request();
-    $baseUrl = $request->getHost();
-
-    $paypal = new ApiContext(
-      new OAuthTokenCredential(
-        $clientID,
-        $clientSecret
-      )
-    );
-
-    $paypal->setConfig(
-      ['mode' => $environment]
-    );
+    $apiContext = $this->paypal_settings->getApiContext();
 
     /**
      * Get the total Amount
@@ -187,7 +177,7 @@ class PaypalPaymentsForm extends FormBase {
       ->setTransactions([$transaction]);
 
     try{
-      $payment->create($paypal); #Create payment Else throw ERROR
+      $payment->create($apiContext); #Create payment Else throw ERROR
     } catch (Exception $exception) {
       die($exception);
     }
@@ -200,7 +190,8 @@ class PaypalPaymentsForm extends FormBase {
 
   /**
    * Checks if the node viewed has paypal field item
-   * defined called in getPrice.
+   * defined
+   * called in getPrice().
    */
   public function getPaypalFieldItem(){
 
@@ -210,11 +201,10 @@ class PaypalPaymentsForm extends FormBase {
      *
      * @var \Drupal\node\Entity\Node $node
      */
-    #$node = \Drupal::routeMatch()->getParameter('node');
-    $node = $this->getTheNode();
-    $bundle = $node->bundle();
 
-    //$field_definitions = \Drupal::service('entity_field.manager')->getFieldDefinitions('node', $bundle);
+    #$node = $this->getTheNode();
+    $node = $this->getNodePerView();
+    $bundle = $node->bundle();
     $field_definitions = $this->entity_field_manager->getFieldDefinitions('node', $bundle);
 
     foreach ($field_definitions as $key => $field) {
@@ -230,7 +220,7 @@ class PaypalPaymentsForm extends FormBase {
     /**
      * Load price from our PaypalItem fieldItem specific to each node
      * In our Paypal Entity form , in node field definitions
-     * TODO:: load node from the view instead
+     * TODO:: check getNodePerView() for price value and sku
      *
      * @var \Drupal\node\Entity\Node $node
      */
@@ -243,8 +233,7 @@ class PaypalPaymentsForm extends FormBase {
    * Auto-generate sku from node title
    */
   public function generateSkuFromNodeTitle(){
-    //$title = $node->getTitle();
-    $title = $this->getTheNode()->getTitle();
+    $title = $this->getNodePerView()->getTitle();
     //Trim to like 6 words (15 characters)
     $sku = substr($title, 0 , 15);
 
@@ -265,4 +254,21 @@ class PaypalPaymentsForm extends FormBase {
     }
   }
 
+  /**
+   * if multiple nodes are displayed on the same page
+   * return the node specific to each paypal form
+   * @return mixed|null
+   */
+  protected function getNodePerView(){
+    $route_name = \Drupal::routeMatch()->getRouteName();
+
+    if ($route_name == 'entity.node.canonical'){
+      $node = \Drupal::routeMatch()->getParameter('node');
+    }
+    elseif ($route_name == 'entity.node.preview'){
+      $node = \Drupal::routeMatch()->getParameter('node_preview');
+    }
+
+    return $node;
+  }
 }

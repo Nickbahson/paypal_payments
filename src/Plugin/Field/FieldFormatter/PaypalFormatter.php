@@ -109,7 +109,7 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
       $elements[$delta] = [
         '#theme' => 'field--field-paypal',
         '#paypal_payments_values' => [
-          'value' => $this->paypalSettings->getSetStoreCurrency().' | '.$this->viewValue($item),#$this->paypal_settings->getSetStoreCurrency().
+          'value' => $this->paypalSettings->getSetStoreCurrency().' | '.$this->viewValue($item),
           'form' => $form,
         ]
       ];

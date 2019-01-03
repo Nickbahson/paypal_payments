@@ -8,20 +8,18 @@ namespace Drupal\paypal_payments\Services;
 
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Session\AccountProxy;
 use Drupal\hook_event_dispatcher\Event\Entity\EntityViewEvent;
 use Drupal\node\NodeInterface;
 use Drupal\node\Routing\RouteSubscriber;
 use PayPal\Api\Payment;
 use PayPal\Api\PaymentExecution;
-use PayPal\Auth\OAuthTokenCredential;
 use PayPal\Exception\PayPalConnectionException;
-use PayPal\Rest\ApiContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\hook_event_dispatcher\HookEventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 
 class paypalNodeViewSubscriber implements EventSubscriberInterface {
 
@@ -55,26 +53,32 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
    */
   private $onPaypalPaymentsResponse;
 
+  /**
+   * @var \Drupal\Core\Session\AccountProxy
+   */
+  private $accountProxy;
+
 
   public function __construct(EntityFieldManager $entity_field_manager,
                               paypalSettings $paypal_settings,
                               EntityManager $entity_manager,
                               RouteSubscriber $node_route_subscriber,
                               RequestStack $request_stack,
-                              onPaypalPaymentsResponse $onPaypalPaymentsResponse) {
+                              onPaypalPaymentsResponse $onPaypalPaymentsResponse,
+                              AccountProxy $accountProxy) {
     $this->entity_field_manager = $entity_field_manager;
     $this->paypal_settings = $paypal_settings;
     $this->entity_manager = $entity_manager;
     $this->node_route_subscriber = $node_route_subscriber;
     $this->request_stack = $request_stack;
     $this->onPaypalPaymentsResponse = $onPaypalPaymentsResponse;
+    $this->accountProxy = $accountProxy;
   }
 
   public function alterEntityView(EntityViewEvent $event){
     $entity = $event->getEntity();
     // Only do this for entities of type Node.
     if ($entity instanceof NodeInterface) {
-      $build = &$event->getBuild();
       /**
        * When node is on full view, we show our paypal form
        * widget so our event fires only then
@@ -83,7 +87,7 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
         $request = $this->request_stack->getCurrentRequest();
         $bundle = $entity->bundle();
         $nid = $entity->id();
-        $uid = 0;
+        $uid = $this->accountProxy->id();
         $fields = $this->entity_field_manager->getFieldDefinitions('node', $bundle);
         foreach ($fields as $key => $field){
 
@@ -104,7 +108,7 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
               $paymentId = $request->query->get('paymentId');
               $token = $request->query->get('token');
               $payerId = $request->query->get('PayerID');
-              $apiContext = $this->getApiContext();
+              $apiContext = $this->paypal_settings->getApiContext();
 
               $this->chargePaypal();
               $this->confirmPayment($paymentId, $apiContext, $nid, $uid);
@@ -128,9 +132,6 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
     }
   }
 
-  public function paypalPaymentsReturn(GetResponseEvent $event){
-
-  }
   /**
    * Returns an array of event names this subscriber wants to listen to.
    *
@@ -174,30 +175,14 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
    * the parent node entity
    */
   protected function getRedirectRoute(){
-    $request = $this->request_stack->getCurrentRequest();
-    $current_path = $request->getSchemeAndHttpHost().$request->getBaseUrl().$request->getPathInfo();
+    $node = \Drupal::routeMatch()->getParameter('node');
+    /**
+     * set current path to be the one of the node in the url
+     * in case there are multiple node entities related to it(the node)
+     */
+    $current_path = $node->toUrl()->setAbsolute()->toString();
 
     return $current_path;
-  }
-
-  /**
-   * Returns the required credentials/settings for making
-   * paypal api calls
-   */
-  protected function getApiContext(){
-    $apiContext = new ApiContext(
-      new OAuthTokenCredential(
-        $this->paypal_settings->getClientId(),
-        $this->paypal_settings->getClientSecret()
-      )
-    );
-
-    #get config environment and set
-    $apiContext->setConfig(
-      ['mode' => $this->paypal_settings->getSetEnvironment()]
-    );
-
-    return $apiContext;
   }
 
   /**
@@ -210,7 +195,8 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
     $token = $request->query->get('token');
     $payerId = $request->query->get('PayerID');
 
-    $apiContext = $this->getApiContext();
+    #$apiContext = $this->getApiContext();
+    $apiContext = $this->paypal_settings->getApiContext();
 
     $payment = Payment::get($paymentId, $apiContext);
 
@@ -223,11 +209,12 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
 
     } catch (PayPalConnectionException $exception) {
       //Payment failed
-      echo $exception->getCode();
-      echo $exception->getData();
-      die($exception);
+      #echo $exception->getCode();
+      #echo $exception->getData();
+      #die($exception);
+      drupal_set_message(t('Unable to charge your account'));
     } catch (Exception $ex) {
-      dd($ex);
+      #dd($ex);
     }
   }
 
@@ -238,7 +225,7 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
     $payment = Payment::get($paymentId, $apiContext);
 
     // prepare values for inserting into our tables
-    $sku = 'fake sku';
+    $sku = $payment->transactions[0]->description;
     $transaction_id = $payment->getId();
     $payment_amount = $payment->transactions[0]->amount->total;
     $payment_status = $payment->getState();
@@ -260,9 +247,9 @@ class paypalNodeViewSubscriber implements EventSubscriberInterface {
        */
       $this->onPaypalPaymentsResponse->insertIntoPaypalPayments($nid, $transaction_id, $sku, $uid, $payment_status);
       $this->onPaypalPaymentsResponse->insertIntoReceipts($nid, $transaction_id, $payer_email, $payment_amount, $sale_id, $invoice_id);
-      drupal_set_message('Payment success');#TODO:: more detailed maybe
+      drupal_set_message(t('Payment success'));#TODO:: more detailed maybe
     } else {
-      drupal_set_message('Unable to charge your account');
+      drupal_set_message(t('Unable to charge your account'));
     }
 
   }

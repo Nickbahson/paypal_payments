@@ -6,6 +6,8 @@ namespace Drupal\paypal_payments\Services;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
+use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Rest\ApiContext;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
@@ -19,7 +21,7 @@ class paypalSettings {
   /**
    * paypalSettings constructor.
    *
-   * @todo  classes here we might need/ better test
+   * @todo  classes here we might need/ better tests
    */
   public function __construct() {
 
@@ -148,7 +150,7 @@ class paypalSettings {
   /**
    * Get the environment saved in the database
    */
-  public function getSetEnvironment(){
+  protected function getSetEnvironment(){
     $environment = $this->getSetting();
     return $environment['environment'];
   }
@@ -156,7 +158,7 @@ class paypalSettings {
   /**
    * Get the client ID from database
    */
-  public function getClientId(){
+  protected function getClientId(){
     $clientID = $this->getSetting();
     return $clientID['client_id'];
 
@@ -165,7 +167,7 @@ class paypalSettings {
   /**
    * Get the client secret from database
    */
-  public function getClientSecret(){
+  protected function getClientSecret(){
     $clientSecret = $this->getSetting();
     return $clientSecret['client_secret'];
   }
@@ -179,24 +181,24 @@ class paypalSettings {
   }
 
   /**
-   * Since every paypal api request will require redirects
-   * create a method to handle that too in relation to
-   * related node
-   *
-   * @var  $node \Drupal\node\Entity\Node
+   * get the SET environment, clientID and clientSecret
+   * for use with paypal api calls
    */
-  public function redirectToOwningNode(Node $node, FormStateInterface $form_state){
 
-    $entity_id = $node->id();
-    $node_bundle = $node->bundle();
-    $node_label = $node->label();
+  public function getApiContext(){
 
-    $node_route = \Drupal::routeMatch()->getRouteName();
+    $apiContext = new ApiContext(
+      new OAuthTokenCredential(
+        $this->getClientId(),
+        $this->getClientSecret()
+      )
+    );
 
-    $redirect = $form_state->setRedirect($node_route, ['node'=> $entity_id ]);
+    $apiContext->setConfig(
+      ['mode' => $this->getSetEnvironment()]
+    );
 
-    return $redirect;
-
+    return $apiContext;
   }
 
 }

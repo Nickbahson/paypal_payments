@@ -40,7 +40,6 @@ class PaypalItem extends NumericItemBase {
     // Prevent early t() calls by using the TranslatableMarkup.
     $properties['value'] = DataDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Integer value'))
-      #->setSetting('case_sensitive', $field_definition->getSetting('case_sensitive'))
       ->setRequired(TRUE);
 
     return $properties;
@@ -96,36 +95,11 @@ class PaypalItem extends NumericItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    #$random = new Random();
-    #$values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
+
     $min = $field_definition->getSetting('min') ?: 0;
     $max = $field_definition->getSetting('max') ?: 999;
     $values['value'] = mt_rand($min, $max);
     return $values;
   }
-
-  /**
-
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-  $elements = [];
-
-  $elements['max_length'] = [
-  '#type' => 'number',
-  '#title' => t('Maximum length'),
-  '#default_value' => $this->getSetting('max_length'),
-  '#required' => TRUE,
-  '#description' => t('The maximum length of the field in characters.'),
-  '#min' => 1,
-  '#disabled' => $has_data,
-  ];
-
-  return $elements;
-  }
-
-  public function isEmpty() {
-  $value = $this->get('value')->getValue();
-  return $value === NULL || $value === '';
-  }
-   */
 
 }

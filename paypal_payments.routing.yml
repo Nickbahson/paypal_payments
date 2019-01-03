@@ -5,3 +5,30 @@ paypal_payments.paypal_payments_settings_form:
     _title: 'Your PayPal paymentsdetails'
   requirements:
     _permission: 'administer paypal_payments'
+
+paypal_payments.all_payments:
+  path: '/admin/paypal_payments/receipts'
+  defaults:
+    _controller: '\Drupal\paypal_payments\Controller\paypalPaymentsController::viewAllPaypalReceipts'
+    _title: 'Paypal payments receipts'
+  requirements:
+    _permission: 'view all paypal payments receipts'
+
+paypal_payments.own_payments:
+  path: '/user/{user}/paypal_payments'
+  defaults:
+    _controller: '\Drupal\paypal_payments\Controller\paypalPaymentsController::viewOwnPaypalPayments'
+    _title: 'My paypal payments'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    _permission: 'view own paypal payments'
+  options:
+    user: \d+
+
+paypal_payments.disputes:
+  path: '/paypal_payments/disputes'
+  defaults:
+    _controller: '\Drupal\paypal_payments\Controller\paypalPaymentsController::paypalDisputes'
+    _title: 'Paypal disputes'
+  requirements:
+    _permission: 'settle paypal payments disputes'

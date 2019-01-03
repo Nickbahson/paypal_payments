@@ -5,7 +5,7 @@ services:
 
   paypal_payments.node_field_subscriber:
     class: Drupal\paypal_payments\Services\paypalNodeViewSubscriber
-    arguments: ['@entity_field.manager','@paypal_payments.settings', '@entity.manager', '@node.route_subscriber', '@request_stack','@paypal_payments.on_paypal_response']
+    arguments: ['@entity_field.manager','@paypal_payments.settings', '@entity.manager', '@node.route_subscriber', '@request_stack','@paypal_payments.on_paypal_response', '@current_user']
     tags:
       - {name: event_subscriber}
 

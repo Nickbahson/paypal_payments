@@ -8,23 +8,17 @@ administer paypal_payments:
   title: 'Administer Paypal Settings'
   description: 'Access the Paypal payments admin Settings Page'
   restrict access: true
-add paypal entities:
-  title: 'Create new Paypal entities'
 
-administer paypal entities:
-  title: 'Administer Paypal entities'
-  description: 'Allow to access the administration form to configure Paypal entities.'
+view all paypal payments receipts:
+  title: 'view all paypal payments receipts'
+  description: 'Access all paypal payments report page'
   restrict access: true
 
-delete paypal entities:
-  title: 'Delete Paypal entities'
+view own paypal payments:
+  title: 'View own paypal payments receipts'
+  description: 'Access own paypal payments'
 
-edit paypal entities:
-  title: 'Edit Paypal entities'
-
-view published paypal entities:
-  title: 'View published Paypal entities'
-
-view unpublished paypal entities:
-  title: 'View unpublished Paypal entities'
+settle paypal payments disputes:
+  title: 'Refund paypal payments'
+  description: 'Refund disputed paypal payments '
 
