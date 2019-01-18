@@ -1,6 +1,7 @@
 {
   "name": "Nickbahson/paypal_payments",
   "description": "Module for that integrates paypal payments into your drupal site ",
+  "keywords": ["Drupal", "paypal payment", "payments"],
   "type": "drupal-module",
   "homepage": "https://github.com/Nickbahson/paypal_payments",
   "support": {

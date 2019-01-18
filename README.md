@@ -29,7 +29,7 @@ Since this is not yet an official drupal module, the easiest way to install it w
 CONFIGURATION
 ------------
 After enabling the module go to `http://<example.com>/admin/config/paypal_payments/settings ` and set your paypal
-credentials as described here `https://www.paypal.com/us/webapps/mpp/set-up-paypal-business-account`.
+credentials as described here `https://developer.paypal.com/developer/applications/`(My Apps & Credentials).
 Finally add a paypal field item to the content type you would wish to collect payment on in admin/structure content types
 
 TROUBLESHOOTING
