@@ -141,5 +141,4 @@ class onPaypalPaymentsResponse {
     $entries = $query->execute()->fetchAll(\PDO::FETCH_ASSOC);
     return $entries;
   }
-
 }

@@ -116,5 +116,4 @@ class PayPalPaymentsSettingsForm extends FormBase {
     $this->paypal_settings->setPaypalCredentials($form_state);
 
   }
-
 }

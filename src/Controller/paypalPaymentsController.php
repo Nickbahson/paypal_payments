@@ -141,5 +141,4 @@ class paypalPaymentsController extends ControllerBase {
     ];
 
   }
-
 }

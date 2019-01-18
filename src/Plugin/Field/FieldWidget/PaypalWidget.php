@@ -115,5 +115,4 @@ class PaypalWidget extends WidgetBase {
 
     return ['value' => $element];
   }
-
 }

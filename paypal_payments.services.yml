@@ -1,7 +1,7 @@
 services:
   paypal_payments.settings:
     class: Drupal\paypal_payments\Services\paypalSettings
-    arguments: []
+    arguments: ['@database']
 
   paypal_payments.node_field_subscriber:
     class: Drupal\paypal_payments\Services\paypalNodeViewSubscriber

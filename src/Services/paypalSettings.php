@@ -3,6 +3,7 @@
 namespace Drupal\paypal_payments\Services;
 
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
@@ -19,12 +20,17 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 class paypalSettings {
 
   /**
+   * @var \Drupal\Core\Database\Connection
+   */
+  private $database_connection;
+
+  /**
    * paypalSettings constructor.
    *
-   * @todo  classes here we might need/ better tests
    */
-  public function __construct() {
+  public function __construct(Connection $database_connection) {
 
+    $this->database_connection = $database_connection;
   }
 
   /**
@@ -40,7 +46,7 @@ class paypalSettings {
     }
 
     else {
-      $insert = Database::getConnection()->insert('paypal_payments_settings');
+      $insert = $this->database_connection->insert('paypal_payments_settings');
       $insert->fields(['environment', 'client_id', 'client_secret', 'store_currency'])
         ->values([
           'environment' => $this->getInputEnvironment($form_state),
@@ -80,7 +86,7 @@ class paypalSettings {
    */
   protected function updatePaypalCredentials(FormStateInterface $form_state){
     //TODO:: work on updating shit now..what what update query
-    Database::getConnection()->update('paypal_payments_settings')
+    $this->database_connection->update('paypal_payments_settings')
       ->fields([
         'environment' =>$this->getInputEnvironment($form_state),
         'client_id' => $form_state->getValue('client_id'),
@@ -127,7 +133,7 @@ class paypalSettings {
    * @return \Drupal\Core\Database\StatementInterface|null
    */
   protected function querySettingsTable(){
-    $select = Database::getConnection()->select('paypal_payments_settings', 'ps');
+    $select = $this->database_connection->select('paypal_payments_settings', 'ps');
     $select->fields('ps', ['environment', 'client_id', 'client_secret', 'store_currency']);
     $results = $select->execute();
 
@@ -200,5 +206,4 @@ class paypalSettings {
 
     return $apiContext;
   }
-
 }

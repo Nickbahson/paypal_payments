@@ -101,5 +101,4 @@ class PaypalItem extends NumericItemBase {
     $values['value'] = mt_rand($min, $max);
     return $values;
   }
-
 }

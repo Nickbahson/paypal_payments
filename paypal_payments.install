@@ -1,7 +1,7 @@
 <?php
 /**
- * Defines the database table(fields) for paypal_payments settings
- * and paypal_payments receipts
+ * Defines the database tables(fields) for paypal_payments settings,
+ * paypal_payments receipts and paypal_payments
  */
 function paypal_payments_schema(){
   $schema['paypal_payments_settings'] = [

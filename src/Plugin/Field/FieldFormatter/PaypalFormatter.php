@@ -105,7 +105,17 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
     $elements = [];
     $form = \Drupal::formBuilder()->getForm('\Drupal\paypal_payments\Form\PaypalPaymentsForm');
 
+
     foreach ($items as $delta => $item) {
+
+      /**
+       * Attach our paypal price value and entity_id
+       * to the form array respective fields before rendering it
+       */
+
+      $form['entity_id']['#value'] = $items->getEntity()->id();
+      $form['price']['#value'] = $this->viewValue($item);
+
       $elements[$delta] = [
         '#theme' => 'field--field-paypal',
         '#paypal_payments_values' => [
@@ -132,5 +142,4 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
     // should equal the output, including newlines.
     return nl2br(Html::escape($item->value));
   }
-
 }

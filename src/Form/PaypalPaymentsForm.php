@@ -13,6 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Path\AliasManager;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\node\Entity\Node;
 use Drupal\paypal_payments\Services\paypalSettings;
 use PayPal\Api\Amount;
 use PayPal\Api\Details;
@@ -84,12 +85,43 @@ class PaypalPaymentsForm extends FormBase {
    *   The form structure.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['price'] = array(
+      '#type' => 'hidden',
+      '#title' => t('Price'),
+      '#size' => 25,
+      '#description' => t("The price to pay."),
+    );
+    $form['entity_id'] = array(
+      '#title' => t('The node id of the entity with the field'),
+      '#type' => 'hidden',
+      '#size' => 25,
+      '#description' => t("The entity owning this."),
+    );
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Pay With Paypal'),
     ];
+    #dump($form);
 
     return $form;
+  }
+
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $price = $form_state->getValue('price');
+    $entity_id = $form_state->getValue('entity_id');
+
+    if (!$price){
+      $form_state->setErrorByName('price', t('The price is not valid/set.'));
+      return;
+    }
+
+    if (!$entity_id){
+      $form_state->setErrorByName('entity_id', t('The Entity id is not set.'));
+      return;
+    }
+
+    $form_state->setValue('price', $price);
+    $form_state->setValue('entity_id', $entity_id);
   }
 
   /**
@@ -101,16 +133,21 @@ class PaypalPaymentsForm extends FormBase {
    *   The current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $price = $this->getPrice($this->getPaypalFieldItem());
-    $currency = $this->paypal_settings->getSetStoreCurrency();
-    if (!$price) {
-      die('Price not set');
+
+    $entity_id = $form_state->getValue('entity_id');
+
+    if ($entity_id) {
+      $price = $form_state->getValue('price');
+      $currency = $this->paypal_settings->getSetStoreCurrency();
+      $node = $this->loadNodeFromForm($form_state);
+
+      $this->paypalRequest($price, $currency, $form_state, $node);
     }
 
-    $this->paypalRequest($price, $currency, $form_state);
+
   }
 
-  protected function paypalRequest($itemPrice, $currency, FormStateInterface $form_state){
+  protected function paypalRequest($itemPrice, $currency, FormStateInterface $form_state, $node_in_field){
     /**
      * Paypal request , should be initiated on form validation
      */
@@ -131,7 +168,7 @@ class PaypalPaymentsForm extends FormBase {
      * Get the total Amount
      *
      */
-    $sku = $this->generateSkuFromNodeTitle();
+    $sku = $this->generateSkuFromNodeTitle($node_in_field);
     $product = $sku; #make SKU
     $price = (float)$itemPrice;
     $shipping = 0.00;
@@ -189,85 +226,25 @@ class PaypalPaymentsForm extends FormBase {
   }
 
   /**
-   * Checks if the node viewed has paypal field item
-   * defined
-   * called in getPrice().
-   */
-  public function getPaypalFieldItem(){
-
-    /**
-     * Load price from our PaypalItem fieldItem specific to each node
-     * In our Paypal Entity form , in node field definitions
-     *
-     * @var \Drupal\node\Entity\Node $node
-     */
-
-    #$node = $this->getTheNode();
-    $node = $this->getNodePerView();
-    $bundle = $node->bundle();
-    $field_definitions = $this->entity_field_manager->getFieldDefinitions('node', $bundle);
-
-    foreach ($field_definitions as $key => $field) {
-      if ($field->getType() == 'field_paypal') {
-        $field_label = $field->getName();
-        $paypalPrice = $node->get($field_label)->getValue();
-      }
-    }
-    return $paypalPrice;
-  }
-
-  public function getTheNode(){
-    /**
-     * Load price from our PaypalItem fieldItem specific to each node
-     * In our Paypal Entity form , in node field definitions
-     * TODO:: check getNodePerView() for price value and sku
-     *
-     * @var \Drupal\node\Entity\Node $node
-     */
-    $node = \Drupal::routeMatch()->getParameter('node');
-
-    return $node;
-  }
-
-  /**
    * Auto-generate sku from node title
    */
-  public function generateSkuFromNodeTitle(){
-    $title = $this->getNodePerView()->getTitle();
+  public function generateSkuFromNodeTitle($node){
+    /** @var \Drupal\node\Entity\Node $node */
+    $title = $node->getTitle();
     //Trim to like 6 words (15 characters)
     $sku = substr($title, 0 , 15);
 
     return $sku;
   }
 
-  /**
-   * Get the price amount in relation to paypalField Item
-   *
-   * @param $paypalPrice
-   *
-   */
-  public function getPrice($paypalPrice){
-    foreach ($paypalPrice as $item => $value) {
-      $price = $value['value'];
-
-      return $price;
-    }
-  }
 
   /**
-   * if multiple nodes are displayed on the same page
-   * return the node specific to each paypal form
-   * @return mixed|null
+   * load node from form['entity_id']
    */
-  protected function getNodePerView(){
-    $route_name = \Drupal::routeMatch()->getRouteName();
-
-    if ($route_name == 'entity.node.canonical'){
-      $node = \Drupal::routeMatch()->getParameter('node');
-    }
-    elseif ($route_name == 'entity.node.preview'){
-      $node = \Drupal::routeMatch()->getParameter('node_preview');
-    }
+  protected function loadNodeFromForm(FormStateInterface $formState){
+    /** @var \Drupal\node\Entity\Node $node */
+    $nid = $formState->getValue('entity_id');
+    $node = Node::load($nid);
 
     return $node;
   }
