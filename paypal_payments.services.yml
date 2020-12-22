@@ -4,11 +4,18 @@ services:
     arguments: ['@database']
 
   paypal_payments.node_field_subscriber:
-    class: Drupal\paypal_payments\Services\paypalNodeViewSubscriber
-    arguments: ['@entity_field.manager','@paypal_payments.settings', '@entity.manager', '@node.route_subscriber', '@request_stack','@paypal_payments.on_paypal_response', '@current_user']
+    class: Drupal\paypal_payments\Services\PayPalNodeViewSubscriber
+    arguments: []
     tags:
-      - {name: event_subscriber}
+      - {name: 'event_subscriber'}
 
   paypal_payments.on_paypal_response:
     class: Drupal\paypal_payments\Services\onPaypalPaymentsResponse
     arguments: ['@database','@request_stack' ,'@uuid','@entity.repository', '@entity.manager']
+
+  paypal_payments.paypal_client:
+    class: Drupal\paypal_payments\Services\PayPalClient
+    arguments: []
+    calls:
+      - [setConfig, ['@config.factory']]
+      - [setEntity, ['@entity_type.manager'] ]

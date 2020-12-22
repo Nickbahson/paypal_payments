@@ -3,7 +3,10 @@
  * Defines the database tables(fields) for paypal_payments settings,
  * paypal_payments receipts and paypal_payments
  */
+
+/*
 function paypal_payments_schema(){
+   //No need to define schema fields for drupal 8||9 configuration api
   $schema['paypal_payments_settings'] = [
     'description' => 'Paypal Account credentials required to make the api calls.',
     'fields' => [
@@ -39,6 +42,8 @@ function paypal_payments_schema(){
     'primary key' => ['environment'],
   ];
 
+
+  // using entity api to define database schema
   $schema['paypal_payments_receipts'] = [
     'description' => 'Stores the payment receipts.',
     'fields' => [
@@ -154,3 +159,5 @@ function paypal_payments_schema(){
 
   return $schema;
 }
+
+*/

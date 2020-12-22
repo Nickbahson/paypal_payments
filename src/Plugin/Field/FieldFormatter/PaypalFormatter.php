@@ -3,6 +3,7 @@
 namespace Drupal\paypal_payments\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityFormBuilderInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -36,6 +37,11 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
   private $paypalSettings;
 
   /**
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  private $configFactory;
+
+  /**
    * Creates an instance of the plugin.
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -59,15 +65,17 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
       $configuration['label'],
       $configuration['view_mode'],
       $configuration['third_party_settings'],
+      $container->get('config.factory'),
       $container->get('paypal_payments.settings')
     );
   }
 
   public function __construct($plugin_id, $plugin_definition, \Drupal\Core\Field\FieldDefinitionInterface
-  $field_definition, array $settings, $label, $view_mode, array $third_party_settings, paypalSettings $paypalSettings) {
+  $field_definition, array $settings, $label, $view_mode, array $third_party_settings,ConfigFactoryInterface $configFactory, paypalSettings $paypalSettings) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
 
     $this->paypalSettings = $paypalSettings;
+    $this->configFactory = $configFactory;
   }
 
   /**
@@ -103,24 +111,20 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
-    $form = \Drupal::formBuilder()->getForm('\Drupal\paypal_payments\Form\PaypalPaymentsForm');
+    $config = $this->configFactory->getEditable('paypal_payments.settings');
+    $client_id = $config->get('client_id');
+    $store_currency = $config->get('store_currency');
 
 
     foreach ($items as $delta => $item) {
 
-      /**
-       * Attach our paypal price value and entity_id
-       * to the form array respective fields before rendering it
-       */
-
-      $form['entity_id']['#value'] = $items->getEntity()->id();
-      $form['price']['#value'] = $this->viewValue($item);
-
       $elements[$delta] = [
         '#theme' => 'field--field-paypal',
-        '#paypal_payments_values' => [
-          'value' => $this->paypalSettings->getSetStoreCurrency().' | '.$this->viewValue($item),
-          'form' => $form,
+        '#data' => [
+          'nid' => $items->getEntity()->id(),
+          'client_id' => $client_id,
+          'currency' => $store_currency,
+          'amount' => $this->viewValue($item)
         ]
       ];
     }

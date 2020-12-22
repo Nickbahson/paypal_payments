@@ -1,8 +1,8 @@
 paypal_payments.paypal_payments_settings_form:
   path: '/admin/config/paypal_payments/settings'
   defaults:
-    _form: '\Drupal\paypal_payments\Form\PayPalPaymentsSettingsForm'
-    _title: 'Your PayPal paymentsdetails'
+    _form: '\Drupal\paypal_payments\Form\PayPalPaymentsConfigForm'
+    _title: 'Your PayPal payments settings'
   requirements:
     _permission: 'administer paypal_payments'
 
@@ -32,3 +32,13 @@ paypal_payments.disputes:
     _title: 'Paypal disputes'
   requirements:
     _permission: 'settle paypal payments disputes'
+
+
+paypal_payments.sdk_payments:
+  path: '/paypal_payments/sdk'
+  defaults:
+    _controller: '\Drupal\paypal_payments\Controller\PaymentController::paypalSdk'
+    _title: 'sdk page'
+  requirements:
+    _permission: 'access content'
+

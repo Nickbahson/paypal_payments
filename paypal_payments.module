@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
 
 /**
  * Implements hook_help().
@@ -34,7 +35,25 @@ function paypal_payments_theme() {
 
     'field--field-paypal' => [
       'template' => 'field--field-paypal',
-      'variables' => ['paypal_payments_values' => NULL,],
+      'variables' => ['data' => NULL,],
+    ],
+
+    'sdk_page' => [
+      'render element' => 'children',
+      'template' => 'sdk-page',
+      'variables' => [
+        'data' => NULL
+      ]
     ],
   ];
+}
+
+function paypal_payments_node_view(array &$build, \Drupal\Core\Entity\EntityInterface $entity, \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display, $view_mode){
+
+  // Only do this for entities of type Node.
+  if ($entity instanceof NodeInterface) {
+    $build['extra_markup'] = [
+      '#markup' => 'this is extra markup HERE NPOW',
+    ];
+  }
 }

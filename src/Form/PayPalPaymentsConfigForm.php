@@ -3,6 +3,7 @@
 namespace Drupal\paypal_payments\Form;
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\paypal_payments\Services\paypalSettings;
@@ -13,23 +14,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * Store the paypal credentials required to make the api calls
  */
-class PayPalPaymentsSettingsForm extends FormBase {
+class PayPalPaymentsConfigForm extends ConfigFormBase {
 
   /**
-   * @var \Drupal\paypal_payments\Services\paypalSettings
+   * Gets the configuration names that will be editable.
+   *
+   * @return array
+   *   An array of configuration object names that are editable if called in
+   *   conjunction with the trait's config() method.
    */
-  private $paypal_settings;
+  protected function getEditableConfigNames() {
 
-  public function __construct(paypalSettings $paypal_settings) {
-    $this->paypal_settings = $paypal_settings;
-  }
-
-
-  public static function create(ContainerInterface $container) {
-    return new static(
-      // Load our paypal_payments_settings.
-      $container->get('paypal_payments.settings')
-    );
+    return ['paypal_payments.settings'];
   }
 
   /**
@@ -43,6 +39,8 @@ class PayPalPaymentsSettingsForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+
+    $config = $this->config('paypal_payments.settings');
     $environmentTypes = [
       'live' => 'Live',
       'sandbox' => 'Sandbox',
@@ -66,6 +64,7 @@ class PayPalPaymentsSettingsForm extends FormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Client ID'),
       '#description' => $this->t('The Client ID from PayPal'),
+      '#default_value' => $config->get('client_id'),
       '#maxlength' => 128,
       '#size' => 64,
       '#required' => TRUE,
@@ -74,6 +73,7 @@ class PayPalPaymentsSettingsForm extends FormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Client Secret'),
       '#description' => $this->t('The Client Secret Key From PayPal'),
+      '#default_value' => $config->get('client_secret'),
       '#maxlength' => 128,
       '#size' => 64,
       '#required' => TRUE,
@@ -83,6 +83,7 @@ class PayPalPaymentsSettingsForm extends FormBase {
       '#title' => $this->t('Environment'),
       '#options' => $environmentTypes,
       '#description' => $this->t('Select either; live or sandbox(for development)'),
+      #'#default_value' => [$config->get('environment')],
       '#required' => TRUE,
     ];
     $form['store_currency'] = [
@@ -90,6 +91,7 @@ class PayPalPaymentsSettingsForm extends FormBase {
       '#title' => $this->t('Store Currency'),
       '#options' => $currency,
       '#description' => $this->t('Select the currency to use with your store'),
+      '#default_value' => $config->get('store_currency'),
       '#required' => TRUE,
     ];
     $form['submit'] = [
@@ -113,7 +115,23 @@ class PayPalPaymentsSettingsForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    $this->paypal_settings->setPaypalCredentials($form_state);
+    $env = $form_state->getValue('environment');
+    #TODO:: fix env select
+
+    $app_env = 'sandbox';
+
+
+
+    $config = $this->config('paypal_payments.settings');
+    $config
+      ->set('store_currency', $form_state->getValue('store_currency'))
+      ->set('environment', $app_env)
+      ->set('client_secret', $form_state->getValue('client_secret'))
+      ->set('client_id', $form_state->getValue('client_id'))
+      ->save();
+
+    drupal_flush_all_caches();
+    parent::submitForm($form, $form_state);
 
   }
 }

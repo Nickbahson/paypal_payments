@@ -12,6 +12,7 @@
 
   "license": "GPL-2.0+",
   "require": {
-    "paypal/rest-api-sdk-php":"^1.4.*"
+    "paypal/rest-api-sdk-php":"^1.4.*",
+    "paypal/paypal-checkout-sdk": "^1.0"
   }
 }
