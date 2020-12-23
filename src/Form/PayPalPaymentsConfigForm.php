@@ -2,12 +2,8 @@
 
 namespace Drupal\paypal_payments\Form;
 
-use Drupal\Core\Database\Database;
 use Drupal\Core\Form\ConfigFormBase;
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\paypal_payments\Services\paypalSettings;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Class PayPalPaymentsSettingsForm.

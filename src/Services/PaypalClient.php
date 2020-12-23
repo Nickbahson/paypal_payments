@@ -113,10 +113,13 @@ class PayPalClient {
 
       $entity->create($values)->save();
 
+      \Drupal::messenger()->addMessage(t('Transaction completed for %a and id : %i'));
+
       return $response;
     }catch (HttpException $ex) {
-      echo $ex->statusCode;
-      print_r($ex->getMessage());
+      //echo $ex->statusCode;
+      //print_r($ex->getMessage());
+      return \Drupal::messenger()->addError('Issue completing the transaction : '.$ex->getMessage());
     }
 
   }

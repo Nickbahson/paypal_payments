@@ -1,17 +1,9 @@
 services:
-  paypal_payments.settings:
-    class: Drupal\paypal_payments\Services\paypalSettings
-    arguments: ['@database']
-
   paypal_payments.node_field_subscriber:
     class: Drupal\paypal_payments\Services\PayPalNodeViewSubscriber
     arguments: []
     tags:
       - {name: 'event_subscriber'}
-
-  paypal_payments.on_paypal_response:
-    class: Drupal\paypal_payments\Services\onPaypalPaymentsResponse
-    arguments: ['@database','@request_stack' ,'@uuid','@entity.repository', '@entity.manager']
 
   paypal_payments.paypal_client:
     class: Drupal\paypal_payments\Services\PayPalClient

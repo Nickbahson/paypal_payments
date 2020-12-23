@@ -4,18 +4,11 @@ namespace Drupal\paypal_payments\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityFormBuilderInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\paypal_payments\Services\paypalSettings;
-use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -30,11 +23,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInterface{
-
-  /**
-   * @var \Drupal\paypal_payments\Services\paypalSettings
-   */
-  private $paypalSettings;
 
   /**
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -65,16 +53,13 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
       $configuration['label'],
       $configuration['view_mode'],
       $configuration['third_party_settings'],
-      $container->get('config.factory'),
-      $container->get('paypal_payments.settings')
+      $container->get('config.factory')
     );
   }
 
   public function __construct($plugin_id, $plugin_definition, \Drupal\Core\Field\FieldDefinitionInterface
-  $field_definition, array $settings, $label, $view_mode, array $third_party_settings,ConfigFactoryInterface $configFactory, paypalSettings $paypalSettings) {
+  $field_definition, array $settings, $label, $view_mode, array $third_party_settings,ConfigFactoryInterface $configFactory) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-
-    $this->paypalSettings = $paypalSettings;
     $this->configFactory = $configFactory;
   }
 
@@ -112,24 +97,40 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
     $config = $this->configFactory->getEditable('paypal_payments.settings');
-    $client_id = $config->get('client_id');
+    $client_id = getenv("CLIENT_ID") ?: $config['client_id'];
     $store_currency = $config->get('store_currency');
 
+    if (!isset($client_id)){
+      foreach ($items as $delta => $item) {
 
-    foreach ($items as $delta => $item) {
+        $elements[$delta] = [
+          '#theme' => 'field--field-paypal',
+          '#data' => [
+            'info' => 'App missing some information..'
+          ]
+        ];
+      }
 
-      $elements[$delta] = [
-        '#theme' => 'field--field-paypal',
-        '#data' => [
-          'nid' => $items->getEntity()->id(),
-          'client_id' => $client_id,
-          'currency' => $store_currency,
-          'amount' => $this->viewValue($item)
-        ]
-      ];
+      return $elements;
+    } else {
+
+      foreach ($items as $delta => $item) {
+
+        $elements[$delta] = [
+          '#theme' => 'field--field-paypal',
+          '#data' => [
+            'nid' => $items->getEntity()->id(),
+            'client_id' => $client_id,
+            'currency' => $store_currency,
+            'amount' => $this->viewValue($item)
+          ]
+        ];
+      }
+
+      return $elements;
+
     }
 
-    return $elements;
   }
 
   /**
