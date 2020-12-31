@@ -39,9 +39,9 @@ function paypal_payments_theme() {
       'variables' => ['data' => NULL,],
     ],
 
-    'sdk_page' => [
+    'paypal_payments_list' => [
       'render element' => 'children',
-      'template' => 'sdk-page',
+      'template' => 'paypal-payments-list',
       'variables' => [
         'data' => NULL
       ]

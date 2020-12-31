@@ -6,39 +6,29 @@ paypal_payments.paypal_payments_settings_form:
   requirements:
     _permission: 'administer paypal_payments'
 
-#paypal_payments.all_payments:
-#  path: '/admin/paypal_payments/receipts'
-# defaults:
-#    _controller: '\Drupal\paypal_payments\Controller\paypalPaymentsController::viewAllPaypalReceipts'
-#    _title: 'Paypal payments receipts'
-#  requirements:
-#    _permission: 'view all paypal payments receipts'
-#
-#paypal_payments.own_payments:
-#  path: '/user/{user}/paypal_payments'
-#  defaults:
-#    _controller: '\Drupal\paypal_payments\Controller\paypalPaymentsController::viewOwnPaypalPayments'
-#    _title: 'My paypal payments'
-#  requirements:
-#    _user_is_logged_in: 'TRUE'
-#    _permission: 'view own paypal payments'
-#  options:
-#    user: \d+
+paypal_payments.all_payments:
+  path: '/admin/paypal_payments/receipts'
+  defaults:
+    _controller: '\Drupal\paypal_payments\Controller\PayPalPaymentsController::viewAllPayPalReceipts'
+    _title: 'Paypal payments receipts'
+  requirements:
+    _permission: 'view all paypal payments receipts'
+
+paypal_payments.own_payments:
+  path: '/user/{user}/paypal_payments'
+  defaults:
+    _controller: '\Drupal\paypal_payments\Controller\PayPalPaymentsController::viewOwnPayPalPayments'
+    _title: 'My paypal payments'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    _permission: 'view own paypal payments'
+  options:
+    user: \d+
 
 paypal_payments.disputes:
   path: '/paypal_payments/disputes'
   defaults:
-    _controller: '\Drupal\paypal_payments\Controller\paypalPaymentsController::paypalDisputes'
+    _controller: '\Drupal\paypal_payments\Controller\PayPalPaymentsController::payPalDisputes'
     _title: 'Paypal disputes'
   requirements:
     _permission: 'settle paypal payments disputes'
-
-
-paypal_payments.sdk_payments:
-  path: '/paypal_payments/sdk'
-  defaults:
-    _controller: '\Drupal\paypal_payments\Controller\PaymentController::paypalSdk'
-    _title: 'sdk page'
-  requirements:
-    _permission: 'access content'
-

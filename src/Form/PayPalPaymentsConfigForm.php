@@ -59,8 +59,8 @@ class PayPalPaymentsConfigForm extends ConfigFormBase {
     $form['client_id'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Client ID'),
-      '#description' => $this->t('The Client ID from PayPal'),
-      '#default_value' => $config->get('client_id'),
+      '#description' => $this->t('The Client ID from PayPal, you can put any value here if you have set PP_CLIENT_ID in your environment variables'),
+      '#default_value' => '',#$config->get('client_id'),
       '#maxlength' => 128,
       '#size' => 64,
       '#required' => TRUE,
@@ -68,8 +68,8 @@ class PayPalPaymentsConfigForm extends ConfigFormBase {
     $form['client_secret'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Client Secret'),
-      '#description' => $this->t('The Client Secret Key From PayPal'),
-      '#default_value' => $config->get('client_secret'),
+      '#description' => $this->t('The Client Secret Key From PayPal, (You can put any value here, if you have set PP_CLIENT_ID in your env variables.)'),
+      '#default_value' => '',#$config->get('client_secret'),
       '#maxlength' => 128,
       '#size' => 64,
       '#required' => TRUE,
@@ -81,6 +81,7 @@ class PayPalPaymentsConfigForm extends ConfigFormBase {
       '#description' => $this->t('Select either; live or sandbox(for development)'),
       #'#default_value' => [$config->get('environment')],
       '#required' => TRUE,
+      '#multiple' => FALSE,
     ];
     $form['store_currency'] = [
       '#type' => 'select',
@@ -112,16 +113,11 @@ class PayPalPaymentsConfigForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
     $env = $form_state->getValue('environment');
-    #TODO:: fix env select
-
-    $app_env = 'sandbox';
-
-
 
     $config = $this->config('paypal_payments.settings');
     $config
       ->set('store_currency', $form_state->getValue('store_currency'))
-      ->set('environment', $app_env)
+      ->set('environment', reset($env))
       ->set('client_secret', $form_state->getValue('client_secret'))
       ->set('client_id', $form_state->getValue('client_id'))
       ->save();

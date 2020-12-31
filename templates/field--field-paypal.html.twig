@@ -5,18 +5,28 @@
   </div>
 {% else  %}
   <script
-          src="https://www.paypal.com/sdk/js?client-id={{ data['client_id'] }}"> // Required. Replace SB_CLIENT_ID with your sandbox client ID.
+          src="https://www.paypal.com/sdk/js?client-id={{ data['client_id'] }}&currency={{ data.currency }}&intent=capture"> // Required. Replace SB_CLIENT_ID with your sandbox client ID.
   </script>
 
 
   {{ data.amount }} {{ data.currency }}
   <div id="paypal-button-container"></div>
-  <div> HELLO THERE</div>
-  <div> {{ dump(data) }}</div>
 
-  //
   <script>
     paypal.Buttons({
+      /*style: {
+        layout:  'vertical',
+        color:   'gold',
+        shape:   'rect',
+        label:   'paypal'
+      },*/
+      /*options: {
+        clientId: process.env.REACT_APP_PAYPAL_CLIENT_ID,
+        currency: 'EUR',
+        vault: false,
+        intent: 'capture'
+      },
+      */
       createOrder: function(data, actions) {
         // This function sets up the details of the transaction, including the amount and line item details.
         return actions.order.create({

@@ -24,6 +24,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInterface{
 
+
   /**
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
@@ -60,6 +61,7 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
   public function __construct($plugin_id, $plugin_definition, \Drupal\Core\Field\FieldDefinitionInterface
   $field_definition, array $settings, $label, $view_mode, array $third_party_settings,ConfigFactoryInterface $configFactory) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
+
     $this->configFactory = $configFactory;
   }
 
@@ -97,7 +99,7 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
     $config = $this->configFactory->getEditable('paypal_payments.settings');
-    $client_id = getenv("CLIENT_ID") ?: $config['client_id'];
+    $client_id = getenv("PP_CLIENT_ID") ?: $config->get('client_id');
     $store_currency = $config->get('store_currency');
 
     if (!isset($client_id)){

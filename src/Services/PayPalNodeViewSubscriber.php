@@ -6,67 +6,60 @@
 
 namespace Drupal\paypal_payments\Services;
 
-use Drupal;
-use Drupal\Core\Entity\EntityFieldManager;
-use Drupal\Core\Entity\EntityManager;
-use Drupal\Core\Session\AccountProxy;
-use Drupal\core_event_dispatcher\Event\Entity\EntityViewEvent;
-use Drupal\node\NodeInterface;
-use Drupal\node\Routing\RouteSubscriber;
-use PayPal\Api\Payment;
-use PayPal\Api\PaymentExecution;
-use PayPal\Exception\PayPalConnectionException;
 use PayPalHttp\IOException;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\hook_event_dispatcher\HookEventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-
+use Symfony\Component\HttpFoundation\RequestStack;
 // TODO:: event not firing, moved to hook_node_view()
 class payPalNodeViewSubscriber implements EventSubscriberInterface {
 
+  /** @var RequestStack */
+  // TODO:: remove not used
+  protected $requestStack;
+  public function setRequestStack(RequestStack $requestStack){
+    $this->requestStack = $requestStack;
+  }
+
   /**
+   * @param \Symfony\Component\HttpKernel\Event\FilterResponseEvent $event
    * Since paypal_payment field is attached to nodes
    * should check if node has paypal payment field attached or for paypal
    * response params in the url
-   *
    */
-  public function paypalResponseEvent(GetResponseEvent $event) {
+  public function paypalResponseEvent(FilterResponseEvent $event) {
     $request = $event->getRequest();
+    if ($request->attributes->get('_route') === 'entity.node.canonical'
+    && $request->get('type') && $request->get('for_node') && $request->get('order_id') && $request->get('type') === 'pp_rq' /* pp_rg === paypal request abrv*/){
 
-    if ($request->attributes->get('_route') === 'entity.node.canonical'){
-      $type = $request->get('type');
       $nid = $request->get('for_node');
       $order_id = $request->get('order_id');
 
-      //dump($type);
-      //dump($nid);
-      //dump($order_id);
-      //dump($request->attributes->get('_route'));
 
       // if all is set, else do nothing
-      if (isset($type) && isset($nid) &&isset($order_id) && $type === 'pp_rq' /* pp_rg === paypal request abrv*/) {
+      /** @var \Drupal\paypal_payments\Services\PayPalClient $charge_service */
+      $charge_service = \Drupal::service('paypal_payments.paypal_client');
 
-        /** @var \Drupal\paypal_payments\Services\PayPalClient $charge_service */
-        $charge_service = Drupal::service('paypal_payments.paypal_client');
+      try {
+        $charge_service->captureOrder($order_id, $nid);
+      } catch (IOException $ex){
 
-        try {
-          $charge_service->captureOrder($order_id);
-        } catch (IOException $ex){
+        \Drupal::messenger()->addError('Issue completing the transaction : '.$ex->getMessage());
 
-          \Drupal::messenger()->addError('Issue completing the transaction : '.$ex->getMessage());
-
-        }
-
-        //http://localhost/dru_8_tests/web/node/1?&for_node=20&order_id=ID_OTDRT6467&type=pp_rq
-
-
-        $res = new RedirectResponse(strtok($request->getUri(), '?'));
-        $res->send();
       }
+
+      //http://localhost/dru_8_tests/web/node/1?&for_node=20&order_id=ID_OTDRT6467&type=pp_rq
+
+      // remove only paypal related tokens and redirect to that for NB:: uniformity
+      $remove = "?for_node=".$nid."&order_id=".$order_id."&type=pp_rq";
+
+
+      $return = str_replace($remove, '', $request->getUri());
+
+      //$res = new RedirectResponse(strtok($request->getUri(), '?'));
+      $res = new RedirectResponse($return);
+      return $res->send();
 
     }
   }
@@ -91,7 +84,7 @@ class payPalNodeViewSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      KernelEvents::REQUEST => 'paypalResponseEvent'
+      KernelEvents::RESPONSE => 'paypalResponseEvent'
     ];
   }
 

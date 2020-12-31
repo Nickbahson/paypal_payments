@@ -66,8 +66,8 @@ class PayPalClient {
     //
     $config = $this->getConfigs();
 
-    $clientId = getenv("CLIENT_ID") ?: $config['client_id'];
-    $clientSecret = getenv("CLIENT_SECRET") ?: $config['client_secret'];
+    $clientId = getenv("PP_CLIENT_ID") ?: $config['client_id'];
+    $clientSecret = getenv("PP_CLIENT_SECRET") ?: $config['client_secret'];
 
     if ($config['environment'] === 'sandbox') {
       return new SandboxEnvironment($clientId, $clientSecret);
@@ -79,7 +79,7 @@ class PayPalClient {
    * @param $order_id
    * the APPROVED-ORDER-ID
    */
-  public function captureOrder($order_id){
+  public function captureOrder($order_id, $nid){
 
     $request = new OrdersCaptureRequest($order_id);
     $request->prefer('return=representation');
@@ -97,11 +97,12 @@ class PayPalClient {
       $amount = $response->result->purchase_units[0]->amount->value;
 
       $entity = $this->entityTypeManager->getStorage('paypal_payments');
+      $user = \Drupal::currentUser()->id();
 
       $values = [
-        'uid' => 10,
+        'uid' => $user,
         'payer_email' => $email_address,
-        'nid' => 20,
+        'nid' => $nid,
         'amount' => $amount,
         'transaction_id' => $payments_id,
         'sale_id' => $id,
