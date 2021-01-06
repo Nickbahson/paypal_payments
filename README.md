@@ -45,4 +45,8 @@ Nicholas Njogu Babu, Email nijoba33@gmail.com
 
 KNOWN ISSUES
 ------------
+Replicate:
+
+When more than one fields are rendered on a page (eg a list of content nodes), the paypal js library
+is loaded each time on every field, resulting in an error/warning. TO FIX
 https://github.com/Luehang/react-paypal-button-v2/issues/30
