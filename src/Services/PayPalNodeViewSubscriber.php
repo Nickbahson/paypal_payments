@@ -10,6 +10,7 @@ use PayPalHttp\IOException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpFoundation\RequestStack;
 // TODO:: event not firing, moved to hook_node_view()
@@ -23,12 +24,15 @@ class payPalNodeViewSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * @param \Symfony\Component\HttpKernel\Event\FilterResponseEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *
    * Since paypal_payment field is attached to nodes
-   * should check if node has paypal payment field attached or for paypal
-   * response params in the url
+   * should check if route is node canonical and has the relevant
+   * response params in the url to initiate the charge
    */
-  public function paypalResponseEvent(FilterResponseEvent $event) {
+  public function paypalResponseEvent(ResponseEvent $event) {
     $request = $event->getRequest();
     if ($request->attributes->get('_route') === 'entity.node.canonical'
     && $request->get('type') && $request->get('for_node') && $request->get('order_id') && $request->get('type') === 'pp_rq' /* pp_rg === paypal request abrv*/){
@@ -41,14 +45,7 @@ class payPalNodeViewSubscriber implements EventSubscriberInterface {
       /** @var \Drupal\paypal_payments\Services\PayPalClient $charge_service */
       $charge_service = \Drupal::service('paypal_payments.paypal_client');
 
-      try {
-        $charge_service->captureOrder($order_id, $nid);
-      } catch (IOException $ex){
-
-        \Drupal::messenger()->addError('Issue completing the transaction : '.$ex->getMessage());
-
-      }
-
+      $charge_service->captureOrder($order_id, $nid);
       //http://localhost/dru_8_tests/web/node/1?&for_node=20&order_id=ID_OTDRT6467&type=pp_rq
 
       // remove only paypal related tokens and redirect to that for NB:: uniformity
@@ -59,7 +56,7 @@ class payPalNodeViewSubscriber implements EventSubscriberInterface {
 
       //$res = new RedirectResponse(strtok($request->getUri(), '?'));
       $res = new RedirectResponse($return);
-      return $res->send();
+      $res->send();
 
     }
   }

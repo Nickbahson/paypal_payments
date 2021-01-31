@@ -122,7 +122,7 @@ class PayPalPaymentsConfigForm extends ConfigFormBase {
       ->set('client_id', $form_state->getValue('client_id'))
       ->save();
 
-    drupal_flush_all_caches();
+    #drupal_flush_all_caches();
     parent::submitForm($form, $form_state);
 
   }
