@@ -32,9 +32,32 @@
         return actions.order.create({
           intent: 'CAPTURE',
           purchase_units: [{
+            reference_id: "{{ data['nid'] }}",
+            //description: "",
+            custom_id: "{{ data['nid'] }}",
+            //soft_descriptor: "Great description 1",
             amount: {
-              value: '{{ data['amount'] }}',
-            }
+              value: "{{ data['amount'] }}",
+              currency_code: "{{ data['currency'] }}",
+              breakdown: {
+                item_total: {
+                  currency_code: "{{ data['currency'] }}",
+                  value: "{{ data['amount'] }}"
+                }
+              }
+            },
+            items: [
+              {
+                name: "{{ data['title'] }}",
+                description: "{{ data['title'] }}",
+                sku: "{{ data['nid'] }}",
+                unit_amount: {
+                  currency_code: "{{ data['currency'] }}",
+                  value: "{{ data['amount'] }}"
+                },
+                quantity: "1"
+              },
+            ]
           }]
         });
       },

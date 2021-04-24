@@ -122,6 +122,7 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
           '#theme' => 'field--field-paypal',
           '#data' => [
             'nid' => $items->getEntity()->id(),
+            'title' => $items->getEntity()->label(),
             'client_id' => $client_id,
             'currency' => $store_currency,
             'amount' => $this->viewValue($item)

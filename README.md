@@ -12,15 +12,14 @@ CONTENTS OF THIS FILE
 INTRODUCTION
 ------------
 This module enables drupal sites to collect payments via paypal, it's lightweight and doesn't use carts.
+Module on github here; https://github.com/Nickbahson/paypal_payments
 
 
 INSTALLATION
 ------------
 Since this is not yet an official drupal module, the easiest way to install it would be to download this code into your
-/modules folder and after install paypal checkout php sdk <strike>(`composer require paypal/rest-api-sdk-php:*`) </strike> 
-(`composer require paypal/paypal-checkout-sdk:*`)
-as the module
- extends that library.<strike>`https://github.com/paypal/PayPal-PHP-SDK`</strike>`https://github.com/paypal/Checkout-PHP-SDK`.
+/modules folder and after install paypal checkout php sdk (`composer require paypal/paypal-checkout-sdk:*`)as the module
+ extends that library, https://github.com/paypal/Checkout-PHP-SDK`.
 
 
 
@@ -34,7 +33,7 @@ NB:: You can also set your app id and secret as environment variables with keys 
 TROUBLESHOOTING
 ------------
 No known problems yet if you followed the installation instructions above, however if your currency is missing
-in the settings form, you can edit `Drupal\paypal_payments\Form\PayPalPaymentsSettingsForm.php` on line 57 or 
+in the settings form, you can edit `Drupal\paypal_payments\Form\PayPalPaymentsSettingsForm.php` on line 57 or
 suggest an edit.
 
 This module is still a work in progress
