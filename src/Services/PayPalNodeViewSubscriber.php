@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpFoundation\RequestStack;
 // TODO:: event not firing, moved to hook_node_view()
-class payPalNodeViewSubscriber implements EventSubscriberInterface {
+class PayPalNodeViewSubscriber implements EventSubscriberInterface {
 
   /** @var RequestStack */
   // TODO:: remove not used

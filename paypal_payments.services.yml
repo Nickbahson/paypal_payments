@@ -1,6 +1,6 @@
 services:
   paypal_payments.node_field_subscriber:
-    class: Drupal\paypal_payments\Services\payPalNodeViewSubscriber
+    class: Drupal\paypal_payments\Services\PayPalNodeViewSubscriber
     arguments: []
     calls:
       - [setRequestStack, ['@request_stack']]
