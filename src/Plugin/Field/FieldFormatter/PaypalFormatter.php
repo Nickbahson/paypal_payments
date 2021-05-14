@@ -117,16 +117,22 @@ class PaypalFormatter extends FormatterBase implements ContainerFactoryPluginInt
     } else {
 
       foreach ($items as $delta => $item) {
+        $data = [
+          'nid' => $items->getEntity()->id(),
+          'title' => $items->getEntity()->label(),
+          'client_id' => $client_id,
+          'currency' => $store_currency,
+          'amount' => $this->viewValue($item)
+        ];
 
         $elements[$delta] = [
           '#theme' => 'field--field-paypal',
-          '#data' => [
-            'nid' => $items->getEntity()->id(),
-            'title' => $items->getEntity()->label(),
-            'client_id' => $client_id,
-            'currency' => $store_currency,
-            'amount' => $this->viewValue($item)
-          ]
+          '#attached' => [
+            'drupalSettings' => [
+              'paypal_payments_data' => $data
+            ],
+          ],
+          '#data' => $data
         ];
       }
 

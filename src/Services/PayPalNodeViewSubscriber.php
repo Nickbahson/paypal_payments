@@ -53,9 +53,11 @@ class PayPalNodeViewSubscriber implements EventSubscriberInterface {
       $return = str_replace($remove, '', $request->getUri());
 
       //$res = new RedirectResponse(strtok($request->getUri(), '?'));
-      $res = new RedirectResponse($return);
-      $res->send();
 
+      //return new RedirectResponse($return);
+      //$res->send();
+      //return;
+      $event->setResponse(new RedirectResponse($return));
     }
   }
 

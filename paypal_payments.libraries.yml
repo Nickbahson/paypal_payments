@@ -1,0 +1,7 @@
+paypal.lib:
+  js:
+    js/paypal_payments.js: {}
+
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
