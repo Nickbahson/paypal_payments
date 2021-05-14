@@ -19,7 +19,7 @@ INSTALLATION
 ------------
 Since this is not yet an official drupal module, the easiest way to install it would be to download this code into your
 /modules folder and after install paypal checkout php sdk (`composer require paypal/paypal-checkout-sdk:*`)as the module
- extends that library, https://github.com/paypal/Checkout-PHP-SDK`.
+ extends that library, https://github.com/paypal/Checkout-PHP-SDK `.
 
 
 
